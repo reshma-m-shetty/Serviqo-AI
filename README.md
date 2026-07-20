@@ -24,7 +24,7 @@ Restaurants, supermarkets, and warehouses waste large amounts of food daily, whi
 
 ---
 
-## 💡 Solution
+## 💡 Solutions
 
 This platform bridges the gap by:
 - Identifying surplus food
