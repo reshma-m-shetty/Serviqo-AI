@@ -1,673 +1,2099 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero Waste Supply Chain</title>
+    <title>Serviqo AI | Intelligent Canteen Management & Food Recovery Platform</title>
+    <meta name="description" content="Srinivas Institute Canteen operations, real-time demand prediction, smart inventory management and registered NGO surplus food recovery.">
     
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- Leaflet.js Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet Maps & Routing -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <!-- Leaflet Routing Machine -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="bg-gradient"></div>
 
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar glass">
-        <div class="sidebar-brand">
-            <i class="ph ph-leaf"></i> <span>Zero Waste</span>
-        </div>
-        
-        <div class="sidebar-nav">
-            <a href="#" data-target="home" class="sidebar-btn active">
-                <i class="ph ph-house"></i> <span>Home</span>
-            </a>
-            <a href="#" data-target="dashboard" class="sidebar-btn">
-                <i class="ph ph-layout"></i> <span>Dashboard</span>
-            </a>
-            <a href="#" data-target="map" class="sidebar-btn">
-                <i class="ph ph-map-trifold"></i> <span>Map</span>
-            </a>
-            <a href="#" data-target="ngos" class="sidebar-btn">
-                <i class="ph ph-heart"></i> <span>NGOs</span>
-            </a>
-            <a href="#" data-target="suppliers" class="sidebar-btn">
-                <i class="ph ph-storefront"></i> <span>Suppliers</span>
-            </a>
-            <a href="#" data-target="analytics" class="sidebar-btn">
-                <i class="ph ph-chart-line"></i> <span>Analytics</span>
-            </a>
-        </div>
-
-        <div class="sidebar-footer">
-            <div id="nav-role-container" class="hidden text-center sidebar-role-box">
-                <span id="nav-role-badge" class="status-badge"></span>
-                <a href="#" onclick="switchRole()" class="switch-role-link">Switch Role</a>
+    <!-- Mobile Top Navigation Bar -->
+    <div class="mobile-top-bar">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div class="brand-icon" style="width: 32px; height: 32px; font-size: 1.15rem;">
+                <i class="ph ph-plant"></i>
             </div>
-            
-            <div class="sidebar-actions">
-                <button onclick="toggleTheme()" class="btn-icon-glass" id="theme-toggle">
-                    <span id="themeIcon">☀️</span>
-                </button>
-                <a href="#" data-target="login" id="nav-login-btn" class="sidebar-btn auth-btn">
-                    <i class="ph ph-user"></i> <span>Login</span>
-                </a>
-            </div>
+            <strong style="font-size: 1.05rem; color: var(--text-primary); font-weight: 700;">Serviqo <span style="color: var(--primary);">AI</span></strong>
         </div>
-    </aside>
-
-    <!-- Mobile Top Nav (Hidden on Desktop) -->
-    <nav class="mobile-nav glass">
-        <div class="nav-brand">
-            <i class="ph ph-leaf"></i> Zero Waste
-        </div>
-        <button id="mobile-menu-btn" class="btn-icon-glass">
+        <button id="mobile-menu-btn" class="icon-btn" aria-label="Toggle navigation menu">
             <i class="ph ph-list"></i>
         </button>
-    </nav>
+    </div>
 
-    <main class="app-container">
-        
-        <!-- HOME PAGE -->
-        <section id="home" class="page-section active">
-            
-            <!-- SECTION 1: HERO -->
-            <div class="hero text-center section-spacing" style="padding-top: 2rem;">
-                <h1 class="hero-title-main">
-                    <span style="color: white;">Eliminate Food Waste.</span>
-                    <span class="text-green">Feed Communities.</span>
-                </h1>
-                <p class="hero-subtext">AI-powered platform connecting surplus food suppliers with NGOs in real time. Saving food. Saving lives.</p>
-                
-                <div class="hero-buttons">
-                    <button class="btn-primary btn-large" onclick="navigateTo('login')">Get Started &rarr;</button>
-                    <button class="btn-outline-glass btn-large">Watch Demo</button>
+    <div class="app-layout">
+
+        <!-- ==========================================
+             COMPACT SIDEBAR NAVIGATION (ROLE-SEPARATED)
+             ========================================== -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-icon">
+                    <i class="ph ph-plant"></i>
                 </div>
-                
-                <div class="hero-counter mt-2">
-                    <span id="count-food">0</span> kg saved &nbsp;|&nbsp; 
-                    <span id="count-ngos">0</span> NGOs &nbsp;|&nbsp; 
-                    <span id="count-alerts">0</span> alerts resolved
+                <div class="brand-text">
+                    <h2>Serviqo <span>AI</span></h2>
+                    <p id="sidebar-sub-brand">Srinivas Canteen</p>
                 </div>
             </div>
 
-            <!-- SECTION 2: HOW IT WORKS -->
-            <div class="section-spacing text-center">
-                <h2 class="section-title" style="justify-content: center;">How It Works</h2>
-                <div class="how-it-works-grid">
-                    <div class="step-card">
-                        <i class="ph ph-leaf step-icon text-success"></i>
-                        <h3>Track Inventory</h3>
-                        <p>Add your food stock. Our AI predicts expiry dates and flags items before they go to waste.</p>
-                    </div>
-                    <div class="step-card">
-                        <i class="ph ph-map-pin step-icon" style="color: #3b82f6;"></i>
-                        <h3>Smart Matching</h3>
-                        <p>We instantly match your surplus with the nearest high-need NGO using live GPS data.</p>
-                    </div>
-                    <div class="step-card">
-                        <i class="ph ph-handshake step-icon" style="color: #f59e0b;"></i>
-                        <h3>Donate & Redistribute</h3>
-                        <p>One click sends a donation request. NGOs get notified immediately. Food reaches people.</p>
-                    </div>
+            <!-- CANTEEN STAFF NAVIGATION -->
+            <nav id="canteen-sidebar-nav" class="sidebar-nav">
+                <div class="nav-section-title">Kitchen Operations</div>
+                <a href="#" class="nav-item sidebar-btn active" data-target="canteen-home">
+                    <i class="ph ph-house"></i> <span>Home</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-demand">
+                    <i class="ph ph-cooking-pot"></i> <span>Demand Intelligence</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-inventory">
+                    <i class="ph ph-package"></i> <span>Inventory</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-recovery">
+                    <i class="ph ph-recycle"></i> <span>Food Redistribution</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-ngos">
+                    <i class="ph ph-heart"></i> <span>NGO Partners</span>
+                </a>
+
+                <div class="nav-section-title">Insights & Team</div>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-analytics">
+                    <i class="ph ph-chart-line-up"></i> <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-announcements">
+                    <i class="ph ph-megaphone"></i> <span>Staff Announcements</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="canteen-profile">
+                    <i class="ph ph-user-gear"></i> <span>Profile / Settings</span>
+                </a>
+            </nav>
+
+            <!-- NGO / RELIEF PARTNER NAVIGATION -->
+            <nav id="ngo-sidebar-nav" class="sidebar-nav hidden">
+                <div class="nav-section-title">Relief Operations</div>
+                <a href="#" class="nav-item sidebar-btn active" data-target="ngo-home">
+                    <i class="ph ph-house"></i> <span>Home</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-incoming">
+                    <i class="ph ph-hand-heart"></i> <span>Available Food</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-requests">
+                    <i class="ph ph-clipboard-text"></i> <span>My Requests</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-schedule">
+                    <i class="ph ph-calendar-check"></i> <span>Pickup Schedule</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-received">
+                    <i class="ph ph-package"></i> <span>Received Food</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-canteens">
+                    <i class="ph ph-storefront"></i> <span>Partner Canteens</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-history">
+                    <i class="ph ph-clock-counter-clockwise"></i> <span>Recovery History</span>
+                </a>
+
+                <div class="nav-section-title">Relief Insights</div>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-analytics">
+                    <i class="ph ph-chart-line-up"></i> <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-announcements">
+                    <i class="ph ph-megaphone"></i> <span>Announcements</span>
+                </a>
+                <a href="#" class="nav-item sidebar-btn" data-target="ngo-profile">
+                    <i class="ph ph-user-gear"></i> <span>Profile / Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-secondary btn-full" onclick="toggleTheme()" style="justify-content: flex-start; padding: 0.5rem 0.75rem; font-size: 0.8rem;">
+                    <span id="themeIcon">☀️</span> <span>Switch Theme</span>
+                </button>
+                <button class="btn-secondary btn-full" onclick="handleLogout()" style="justify-content: flex-start; padding: 0.5rem 0.75rem; font-size: 0.8rem; color: var(--danger-text);">
+                    <i class="ph ph-sign-out"></i> <span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- ==========================================
+             TOP HEADER
+             ========================================== -->
+        <header class="app-header">
+            <div class="header-title">
+                <h1 id="header-page-title">Operations Overview</h1>
+                <p id="header-page-subtitle">Srinivas Institute Canteen & Kitchen Command Center</p>
+            </div>
+
+            <div class="header-actions">
+                <!-- Role Badge Indicator -->
+                <div id="header-role-badge" class="role-badge-pill">
+                    <i class="ph ph-storefront"></i>
+                    <span id="header-role-name">Srinivas Canteen</span>
                 </div>
-            </div>
 
-            <!-- SECTION 3: LIVE IMPACT TICKER -->
-            <div class="ticker-wrap" style="margin-left: -20px; width: calc(100% + 40px);">
-                <div class="ticker-content">
-                    🌱 12,450 kg food saved this month &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🤝 84 NGOs actively receiving donations &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🌍 31,125 kg CO₂ prevented &nbsp;&nbsp;&bull;&nbsp;&nbsp; ⚡ 247 expiry alerts resolved &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🏪 45 active suppliers on the platform &nbsp;&nbsp;&bull;&nbsp;&nbsp; ♻️ Zero Waste Intelligence — reducing food waste one donation at a time &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🌱 12,450 kg food saved this month &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🤝 84 NGOs actively receiving donations &nbsp;&nbsp;&bull;&nbsp;&nbsp; 🌍 31,125 kg CO₂ prevented
-                </div>
-            </div>
+                <!-- Notifications Button & Dropdown Container -->
+                <div class="header-profile-container" style="position: relative;">
+                    <button class="icon-btn" id="header-notif-btn" onclick="toggleNotificationsDropdown(event)" title="Redistribution & System Notifications">
+                        <i class="ph ph-bell"></i>
+                        <span class="badge-dot hidden" id="header-notif-dot"></span>
+                    </button>
 
-            <!-- SECTION 4: FEATURES GRID -->
-            <div class="section-spacing">
-                <h2 class="section-title text-center" style="justify-content: center; margin-bottom: 2rem;">Built for Real Impact</h2>
-                <div class="features-grid-2x2">
-                    <div class="feature-card">
-                        <i class="ph ph-brain text-primary"></i>
-                        <h3>AI Expiry Prediction</h3>
-                        <p>Know when food expires before it happens. Get alerts 3 days early.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="ph ph-users-three text-success"></i>
-                        <h3>NGO Network</h3>
-                        <p>Connect with 80+ verified NGOs across your city in under 60 seconds.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="ph ph-currency-inr text-warning"></i>
-                        <h3>Smart Pricing</h3>
-                        <p>Automatically calculate discount prices to move near-expiry stock fast.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="ph ph-map-trifold text-danger"></i>
-                        <h3>Route Optimization</h3>
-                        <p>See the shortest route from your location to the nearest NGO on a live map.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 5: TESTIMONIALS -->
-            <div class="section-spacing text-center">
-                <h2 class="section-title" style="justify-content: center;">Trusted by Suppliers & NGOs</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <p class="testimonial-quote">"We used to throw away 30kg of food daily. Now it goes to families in need within hours."</p>
-                        <p class="testimonial-author">&mdash; Ravi K., Restaurant Owner</p>
-                        <div class="testimonial-stars">★★★★★</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <p class="testimonial-quote">"The expiry alerts have helped us plan pickups perfectly. Game-changer for our kitchen."</p>
-                        <p class="testimonial-author">&mdash; Priya M., NGO Coordinator</p>
-                        <div class="testimonial-stars">★★★★★</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <p class="testimonial-quote">"Zero Waste Intelligence helped us save ₹40,000 worth of food last month alone."</p>
-                        <p class="testimonial-author">&mdash; Amit S., Supermarket Manager</p>
-                        <div class="testimonial-stars">★★★★★</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 6: CTA BANNER -->
-            <div class="cta-banner">
-                <h2>Ready to stop wasting food?</h2>
-                <p>Join 45+ suppliers and 84 NGOs already making an impact.</p>
-                <button class="btn-primary btn-large" style="padding-left: 3rem; padding-right: 3rem;" onclick="navigateTo('login')">Start Saving Food Now &rarr;</button>
-            </div>
-
-        </section>
-
-        <!-- LOGIN / SIGNUP PAGE -->
-        <section id="login" class="page-section hidden">
-            <!-- ROLE SELECTION STEP -->
-            <div class="login-wrapper" id="role-selection-step">
-                <div class="text-center" style="width: 100%; max-width: 800px;">
-                    <h2 style="color: white; font-size: 22px; font-weight: bold; margin-bottom: 2rem;">I am a...</h2>
-                    <div class="role-cards-grid">
-                        <!-- LEFT CARD -->
-                        <div class="role-card glass" id="role-supplier" onclick="selectRole('supplier')">
-                            <i class="ph ph-storefront role-icon text-success"></i>
-                            <h3>Supplier</h3>
-                            <p class="role-subtitle">Restaurant, supermarket, or warehouse with surplus food</p>
-                            <p class="role-examples">e.g. Restaurant, Hotel, Supermarket, Warehouse</p>
-                            <div class="role-badge"><i class="ph-fill ph-check-circle"></i></div>
+                    <!-- Notifications Dropdown Menu -->
+                    <div id="notifications-dropdown-menu" class="notif-dropdown hidden">
+                        <div class="notif-header">
+                            <div>
+                                <h4 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text-primary);">Notifications</h4>
+                                <p style="margin: 2px 0 0 0; font-size: 0.72rem; color: var(--text-secondary);">Redistribution & Operations Alerts</p>
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="markAllNotificationsAsRead()" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">
+                                Mark all read
+                            </button>
                         </div>
-                        
-                        <!-- RIGHT CARD -->
-                        <div class="role-card glass" id="role-ngo" onclick="selectRole('ngo')">
-                            <i class="ph ph-hand-heart role-icon text-warning"></i>
-                            <h3>NGO / Receiver</h3>
-                            <p class="role-subtitle">Organisation that receives and distributes food to those in need</p>
-                            <p class="role-examples">e.g. Food bank, Community kitchen, Relief trust</p>
-                            <div class="role-badge"><i class="ph-fill ph-check-circle"></i></div>
-                        </div>
-                    </div>
-                    <button class="btn-primary mt-2" id="role-continue-btn" disabled onclick="confirmRole()" style="background: gray; box-shadow: none; width: 200px; padding: 1rem;">Continue</button>
-                </div>
-            </div>
-
-            <!-- EMAIL/PASSWORD STEP -->
-            <div class="login-wrapper hidden" id="auth-form-step">
-                <div class="glass-card login-card text-center">
-                    <i class="ph ph-user-circle icon-huge text-primary"></i>
-                    <h2 id="auth-title">Welcome Back</h2>
-                    <p class="text-muted" id="auth-subtitle">Login to access your dashboard</p>
-                    
-                    <form id="login-form">
-                        <div class="input-group">
-                            <i class="ph ph-envelope"></i>
-                            <input type="email" id="auth-email" placeholder="Email Address" required>
-                        </div>
-                        <div class="input-group">
-                            <i class="ph ph-lock"></i>
-                            <input type="password" id="auth-password" placeholder="Password" required>
-                        </div>
-                        <button type="submit" class="btn-primary btn-full" id="auth-submit">Login</button>
-                    </form>
-                    
-                    <p class="toggle-auth">
-                        <span id="auth-toggle-text">Don't have an account?</span> 
-                        <a href="#" id="auth-toggle-btn">Sign Up</a>
-                    </p>
-                    <a href="#" onclick="switchRole()" class="text-muted mt-1" style="display: inline-block; font-size: 0.9rem;"><i class="ph ph-arrow-left"></i> Back to Role Selection</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROFILE PAGE -->
-        <section id="profile" class="page-section hidden">
-            <div class="glass-card login-card text-center">
-                <i class="ph ph-user-check icon-huge text-primary"></i>
-                <h2>My Profile</h2>
-                <div class="profile-details">
-                    <p class="text-muted">Logged in as:</p>
-                    <h3 id="profile-email-display">user@example.com</h3>
-                </div>
-                <button class="btn-danger btn-full" id="logout-btn">Logout <i class="ph ph-sign-out"></i></button>
-            </div>
-        </section>
-
-        <!-- DASHBOARD PAGE -->
-        <section id="dashboard" class="page-section hidden">
-            
-            <div id="supplier-analyze-section">
-                <h2 class="section-title"><i class="ph ph-magnifying-glass"></i> Analyze Food Item</h2>
-                
-                <div class="glass-card mb-2">
-                    <form id="analyze-form" class="analyze-flex">
-                        <div class="input-group flex-grow">
-                            <i class="ph ph-bowl-food"></i>
-                            <input type="text" id="food-input" placeholder="Enter essential food (e.g. milk, rice, wheat...)" required autocomplete="off">
-                        </div>
-                        <button type="submit" class="btn-primary" id="analyze-btn">Analyze Food <i class="ph ph-sparkle"></i></button>
-                    </form>
-                </div>
-
-                <!-- Analysis Results Section -->
-                <div id="analyze-results" class="hidden mt-2">
-                    <div class="results-grid">
-                        <div class="glass-card result-card">
-                            <i class="ph ph-info text-primary"></i>
-                            <p class="text-muted">Recommendation</p>
-                            <h3 id="res-action">--</h3>
-                        </div>
-                        <div class="glass-card result-card">
-                            <i class="ph ph-tag text-success"></i>
-                            <p class="text-muted">Discount</p>
-                            <h3 id="res-discount">--</h3>
-                        </div>
-                        <div class="glass-card result-card">
-                            <i class="ph ph-currency-inr text-warning"></i>
-                            <p class="text-muted">Final Price</p>
-                            <h3 id="res-price">--</h3>
-                        </div>
-                        <div class="glass-card result-card">
-                            <i class="ph ph-trend-up text-info"></i>
-                            <p class="text-muted">Demand</p>
-                            <h3 id="res-demand">--</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DASHBOARD BLOCKS -->
-            <div id="dashboard-content" class="mt-2">
-                
-                <!-- ============================ -->
-                <!-- COMMON SHARED COMPONENTS     -->
-                <!-- ============================ -->
-                <div id="common-chart-container" class="dashboard-grid mb-2">
-                    <!-- BLOCK 3: Chart -->
-                    <div class="glass-card" style="grid-column: 1 / -1;">
-                        <h3 class="mb-1">Food Saved vs Wasted</h3>
-                        <div class="chart-container" style="position: relative; height:250px; width:100%">
-                            <canvas id="foodChart"></canvas>
+                        <div id="notifications-list-container" class="notif-body">
+                            <div class="text-center text-muted" style="padding: 1.5rem 0; font-size: 0.82rem;">No new notifications</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ============================ -->
-                <!-- SUPPLIER DASHBOARD           -->
-                <!-- ============================ -->
-                <div id="supplier-dashboard" class="hidden">
-                    
-                    <!-- SECTION 3: Expiring Soon Alert Banner -->
-                    <div class="glass-card mb-2" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning);">
-                        <div class="flex-align text-warning">
-                            <i class="ph ph-warning-circle icon-large"></i>
-                            <div style="flex-grow: 1;">
-                                <h3 style="margin: 0; color: var(--warning);">Urgent Action Required</h3>
-                                <p>You have 3 item(s) expiring within 3 days. Take action now →</p>
+                <!-- User Profile with Dropdown -->
+                <div class="header-profile-container">
+                    <div class="user-profile" id="user-profile-btn" onclick="toggleProfileDropdown(event)" title="Account details & options">
+                        <div class="avatar" id="header-avatar-initials">?</div>
+                        <div class="user-info">
+                            <span class="user-name" id="header-user-name">Guest</span>
+                            <span class="user-role-label" id="header-user-sub">Not signed in</span>
+                        </div>
+                        <i class="ph ph-caret-down" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 2px;"></i>
+                    </div>
+
+                    <!-- Profile Dropdown Menu -->
+                    <div id="profile-dropdown-menu" class="profile-dropdown hidden">
+                        <div class="profile-dropdown-header">
+                            <div class="avatar" id="dropdown-avatar-initials" style="width: 36px; height: 36px; font-size: 0.95rem;">?</div>
+                            <div style="overflow: hidden;">
+                                <h4 id="dropdown-user-name" style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Guest</h4>
+                                <p id="dropdown-user-email" style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Not signed in</p>
+                                <span class="badge badge-info" id="dropdown-user-role" style="font-size: 0.68rem; margin-top: 4px; display: inline-block;">Guest</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- BLOCK 5: Quick Action Buttons -->
-                    <div class="quick-actions-grid mb-2">
-                        <button class="btn-outline-glass" onclick="navigateTo('ngos')"><i class="ph ph-map-pin"></i> Find Nearest NGO</button>
-                        <button class="btn-outline-glass" onclick="generateReport()"><i class="ph ph-file-text"></i> Generate Report</button>
-                        <button class="btn-outline-glass" onclick="navigateTo('map')"><i class="ph ph-map-trifold"></i> View Map</button>
-                    </div>
-
-                    <!-- BLOCK 1: Hero stat row -->
-                    <div class="stats-grid mb-2">
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">Food Saved</p>
-                            <h3>12,450 kg</h3>
-                            <div class="stat-trend text-success"><i class="ph ph-caret-up"></i> +8% week</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">NGOs Supported</p>
-                            <h3>84 NGOs</h3>
-                            <div class="stat-trend text-success"><i class="ph ph-caret-up"></i> +3 new</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">CO₂ Reduced</p>
-                            <h3>31,125 kg</h3>
-                            <div class="stat-trend text-primary"><i class="ph ph-equals"></i> 1,500 trees</div>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">Alerts This Month</p>
-                            <h3>247 Alerts</h3>
-                            <div class="stat-trend text-danger"><i class="ph ph-caret-down"></i> 12 critical</div>
+                        <div class="profile-dropdown-divider"></div>
+                        <div class="profile-dropdown-actions">
+                            <button type="button" class="dropdown-item-btn" onclick="openEditProfileModal()">
+                                <i class="ph ph-user-circle-gear"></i> <span>Edit Profile</span>
+                            </button>
+                            <button type="button" class="dropdown-item-btn danger" onclick="handleLogout()">
+                                <i class="ph ph-sign-out"></i> <span>Sign Out</span>
+                            </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </header>
 
-                    <div class="dashboard-grid mb-2">
-                        <!-- SECTION 1: My Current Inventory -->
-                        <div class="glass-card" style="overflow-x: auto;">
-                            <h3 class="mb-1">My Current Inventory</h3>
-                            <table class="glass-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Quantity</th>
-                                        <th>Expires In</th>
-                                        <th>Urgency</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Milk</td>
-                                        <td>20 L</td>
-                                        <td class="text-danger font-bold">2 days</td>
-                                        <td><span class="status-badge bg-danger text-white">Critical</span></td>
-                                        <td>
-                                            <button class="btn-primary" onclick="triggerDonation(this)" style="padding: 4px 8px; font-size: 0.8rem;">Donate</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Tomato</td>
-                                        <td>12 kg</td>
-                                        <td class="text-warning font-bold">3 days</td>
-                                        <td><span class="status-badge bg-warning text-black">Warning</span></td>
-                                        <td>
-                                            <button class="btn-primary" style="background: var(--info); padding: 4px 8px; font-size: 0.8rem;">List</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Rice</td>
-                                        <td>50 kg</td>
-                                        <td class="text-success font-bold">30 days</td>
-                                        <td><span class="status-badge bg-success text-white">Safe</span></td>
-                                        <td>
-                                            <button class="btn-primary" style="background: var(--danger); padding: 4px 8px; font-size: 0.8rem;"><i class="ph ph-x"></i></button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+        <!-- ==========================================
+             MAIN CONTENT AREA
+             ========================================== -->
+        <main class="main-content">
+
+            <!-- ==========================================
+                 AUTHENTICATION VIEW (PURE DB-BACKED)
+                 ========================================== -->
+            <section id="login" class="page-section hidden">
+                <div class="onboarding-container" style="max-width: 520px; margin: 2rem auto;">
+                    <div class="card" style="padding: 2.25rem;">
+                        <div class="text-center" style="margin-bottom: 1.5rem;">
+                            <div class="brand-icon" style="margin: 0 auto 0.75rem; width: 48px; height: 48px; font-size: 1.6rem;">
+                                <i class="ph ph-plant"></i>
+                            </div>
+                            <h2 id="auth-title" style="font-size: 1.55rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+                                Sign in to Serviqo AI
+                            </h2>
+                            <p id="auth-subtitle" class="text-secondary" style="font-size: 0.86rem;">
+                                Access your personalized canteen or NGO workspace.
+                            </p>
                         </div>
 
-                        <!-- SECTION 2: Add Food Item form -->
-                        <div class="glass-card">
-                            <h3 class="mb-1">Add Food Item</h3>
-                            <form id="supplier-add-item-form">
-                                <div class="input-group mb-1">
-                                    <i class="ph ph-bowl-food"></i>
-                                    <input type="text" placeholder="Item Name (e.g. Milk)" required>
+                        <!-- Auth Mode Switcher -->
+                        <div class="auth-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            <button type="button" class="auth-tab-btn active" id="auth-mode-signin" onclick="setAuthMode('signin')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 700; border-bottom: 2px solid var(--primary); color: var(--primary); cursor: pointer;">
+                                Sign In
+                            </button>
+                            <button type="button" class="auth-tab-btn" id="auth-mode-register" onclick="setAuthMode('register')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                                Create Account
+                            </button>
+                        </div>
+
+                        <!-- User-facing Alert / Error message container -->
+                        <div id="auth-alert-box" class="hidden" style="margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;"></div>
+
+                        <!-- 1. SIGN IN FORM -->
+                        <form id="signin-form" onsubmit="handleLoginSubmit(event)">
+                            <div class="form-group">
+                                <label for="auth-email" style="font-size: 0.82rem; font-weight: 600;">Email Address</label>
+                                <input type="email" id="auth-email" class="form-control" placeholder="user@serviqo.ai" required autocomplete="email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="auth-password" style="font-size: 0.82rem; font-weight: 600;">Password</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="auth-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('auth-password', this)" title="Show/Hide Password">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
                                 </div>
-                                <div class="flex-align gap-1 mb-1" style="gap: 1rem;">
-                                    <div class="input-group" style="margin-bottom: 0; flex: 1;">
-                                        <input type="number" placeholder="Quantity" required>
+                            </div>
+
+                            <button type="submit" id="auth-signin-btn" class="btn-primary btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem;">
+                                Sign In to Portal →
+                            </button>
+                        </form>
+
+                        <!-- 2. CREATE ACCOUNT FORM -->
+                        <form id="register-form" class="hidden" onsubmit="handleRegisterSubmit(event)">
+                            <div class="form-group">
+                                <label for="reg-name" style="font-size: 0.82rem; font-weight: 600;">Full Name</label>
+                                <input type="text" id="reg-name" class="form-control" placeholder="e.g. Ramesh Kumar" required minlength="2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reg-email" style="font-size: 0.82rem; font-weight: 600;">Email Address</label>
+                                <input type="email" id="reg-email" class="form-control" placeholder="user@organization.org" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reg-password" style="font-size: 0.82rem; font-weight: 600;">Password (min 4 characters)</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="reg-password" class="form-control" placeholder="Create password" required minlength="4">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Show/Hide Password">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reg-confirm-password" style="font-size: 0.82rem; font-weight: 600;">Confirm Password</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="reg-confirm-password" class="form-control" placeholder="Re-enter password" required minlength="4">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" title="Show/Hide Password">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reg-role" style="font-size: 0.82rem; font-weight: 600;">Select Organization Type</label>
+                                <select id="reg-role" class="form-control" onchange="onRegisterRoleChange()">
+                                    <option value="Kitchen Staff">Kitchen Staff / Canteen (Srinivas Institute)</option>
+                                    <option value="NGO">NGO / Relief Partner (Food Recovery)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="reg-org-group">
+                                <label for="reg-org" style="font-size: 0.82rem; font-weight: 600;" id="reg-org-label">Organization Name</label>
+                                <input type="text" id="reg-org" class="form-control" value="Srinivas Institute Canteen">
+                            </div>
+
+                            <!-- Additional NGO Profile Fields (Active when role is NGO) -->
+                            <div id="reg-ngo-details" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.5rem; background: var(--bg-surface-secondary, #f8fafc); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="ph ph-identification-card"></i> Relief Partner Profile
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="reg-phone" style="font-size: 0.8rem; font-weight: 600;">Contact Phone Number</label>
+                                    <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98450 12345">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="reg-address" style="font-size: 0.8rem; font-weight: 600;">Physical Address / Location</label>
+                                    <input type="text" id="reg-address" class="form-control" placeholder="e.g. Kodialbail, Mangalore, Karnataka">
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="reg-capacity" style="font-size: 0.8rem; font-weight: 600;">Daily Capacity</label>
+                                        <input type="number" id="reg-capacity" class="form-control" placeholder="150" min="10" value="150">
                                     </div>
-                                    <div class="input-group" style="margin-bottom: 0; flex: 1;">
-                                        <select class="styled-select" style="width: 100%; border: none; background: transparent;">
-                                            <option>kg</option>
-                                            <option>Liters</option>
-                                            <option>Pieces</option>
-                                            <option>Loaves</option>
-                                            <option>Packs</option>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="reg-need-level" style="font-size: 0.8rem; font-weight: 600;">Need Urgency</label>
+                                        <select id="reg-need-level" class="form-control">
+                                            <option value="high">High Need</option>
+                                            <option value="medium" selected>Medium Need</option>
+                                            <option value="low">Low Need</option>
                                         </select>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-primary btn-full" onclick="alert('Item added! Expiry tracked.')">Add to Inventory</button>
-                            </form>
-                        </div>
-                    </div>
+                            </div>
 
-                    <!-- BLOCK 2: Live Expiry Timeline -->
-                    <div class="glass-card mb-2">
-                        <h3 class="mb-1">Items Expiring This Week</h3>
-                        <div class="expiry-timeline">
-                            <div class="expiry-item">
-                                <div class="expiry-info"><span>Milk (20L)</span> <span>2 days</span></div>
-                                <div class="progress-bar"><div class="progress-fill bg-danger" style="width: 95%;"></div></div>
-                                <div class="expiry-action text-danger">Critical <i class="ph ph-warning"></i></div>
-                            </div>
-                            <div class="expiry-item">
-                                <div class="expiry-info"><span>Tomato (12kg)</span> <span>3 days</span></div>
-                                <div class="progress-bar"><div class="progress-fill bg-warning" style="width: 60%;"></div></div>
-                                <div class="expiry-action text-warning">Warning <i class="ph ph-warning-circle"></i></div>
-                            </div>
-                        </div>
+                            <button type="submit" id="auth-register-btn" class="btn-primary btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">
+                                Create Account →
+                            </button>
+                        </form>
                     </div>
                 </div>
+            </section>
 
-                <!-- ============================ -->
-                <!-- NGO DASHBOARD                -->
-                <!-- ============================ -->
-                <div id="ngo-dashboard" class="hidden">
-                    
-                    <!-- SECTION 4: NGO Stats Row -->
-                    <div class="stats-grid mb-2" style="grid-template-columns: repeat(3, 1fr);">
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">Total Received</p>
-                            <h3>340 kg</h3>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">This Week</p>
-                            <h3>45 kg</h3>
-                        </div>
-                        <div class="glass-card stat-card">
-                            <p class="text-muted">Families Served</p>
-                            <h3>~120</h3>
-                        </div>
-                    </div>
 
-                    <div class="dashboard-grid mb-2">
-                        <!-- SECTION 1: Incoming Donations -->
-                        <div class="glass-card" style="overflow-x: auto;">
-                            <h3 class="mb-1">Incoming Donations</h3>
-                            <table class="glass-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Quantity</th>
-                                        <th>From</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Rice</td>
-                                        <td>15 kg</td>
-                                        <td>Restaurant A</td>
-                                        <td><span class="status-badge bg-success text-white">Ready for Pickup</span></td>
-                                        <td><button class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Accept</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Bread</td>
-                                        <td>20 loaves</td>
-                                        <td>Bakery Delight</td>
-                                        <td><span class="status-badge bg-warning text-black">Pending</span></td>
-                                        <td><button class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Accept</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div>
-                            <!-- SECTION 3: Our Need Level -->
-                            <div class="glass-card mb-2">
-                                <h3 class="mb-1 flex-align">Our Need Level <span class="live-dot" style="margin-left:auto;"></span></h3>
-                                <select id="ngo-need-level" class="styled-select mb-1" style="width: 100%;">
-                                    <option value="high">High Need</option>
-                                    <option value="medium">Medium Need</option>
-                                    <option value="low">Low Need</option>
-                                </select>
-                                <p class="text-muted text-sm"><i class="ph ph-check-circle text-success"></i> Currently accepting: All food types</p>
-                            </div>
-
-                            <!-- SECTION 2: Nearby Surplus -->
-                            <div class="glass-card">
-                                <h3 class="mb-1">Nearby Surplus</h3>
-                                <div style="background: rgba(0,0,0,0.2); height: 180px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                                    <p class="text-muted"><i class="ph ph-map-pin"></i> Map Preview Embedded Here</p>
-                                </div>
-                                <ul class="activity-feed mb-1" style="margin-top: 0;">
-                                    <li><span class="act-dot bg-success"></span> Restaurant A (1.5 km) - Rice, Bread</li>
-                                    <li><span class="act-dot bg-success"></span> Supermarket B (3.2 km) - Vegetables</li>
-                                </ul>
-                                <button class="btn-outline-glass btn-full" onclick="navigateTo('map')">View Full Map</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Error Banner -->
-            <div id="validation-error" class="glass-card error-card hidden mb-2">
-                <div class="flex-align">
-                    <i class="ph ph-warning-octagon icon-large"></i>
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 1. HOME (OPERATIONS OVERVIEW)
+                 ======================================================= -->
+            <section id="canteen-home" class="page-section active">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                     <div>
-                        <h3>Item Not Allowed</h3>
-                        <p id="validation-msg">Only essential food items are allowed.</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="badge badge-success"><i class="ph ph-storefront"></i> Srinivas Institute Canteen</span>
+                            <span class="badge badge-info" id="canteen-home-date">Live Operations</span>
+                        </div>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 0.35rem;">
+                            Good morning, <span id="canteen-home-greeting-name">Kitchen Staff</span> 👋
+                        </h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;" id="canteen-home-greeting-sub">
+                            Your Srinivas Canteen operations overview.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn-primary" onclick="navigateTo('canteen-demand')">
+                            <i class="ph ph-cooking-pot"></i> Open Demand Model
+                        </button>
+                        <button class="btn-secondary" onclick="loadCanteenHomeData()">
+                            <i class="ph ph-arrows-clockwise"></i> Refresh Status
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Loader -->
-            <div id="analyze-loader" class="text-center hidden mb-2">
-                <i class="ph ph-spinner ph-spin icon-huge text-primary"></i>
-                <p>Analyzing supply chain metrics...</p>
-            </div>
+                <!-- Modern Operational KPI Grid (Directly from MySQL) -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Today's Predicted Demand</span>
+                            <span class="kpi-value" id="canteen-kpi-demand">0 Servings</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">ML Model Active</span></span>
+                        </div>
+                        <div class="kpi-icon-box teal"><i class="ph ph-cooking-pot"></i></div>
+                    </div>
 
-            <!-- Removed old Results Grid -->
-        </section>
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Expected Attendance</span>
+                            <span class="kpi-value" id="canteen-kpi-attendance">0 Turnout</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Campus & Hostel</span></span>
+                        </div>
+                        <div class="kpi-icon-box info"><i class="ph ph-users"></i></div>
+                    </div>
 
-        <!-- MAP PAGE -->
-        <section id="map" class="page-section hidden">
-            <h2 class="section-title"><i class="ph ph-map-trifold"></i> Live Routing Map</h2>
-            <div class="glass-card map-wrapper">
-                <div id="map-container"></div>
-                <div class="map-legend glass">
-                    <h4>Legend</h4>
-                    <div><span class="legend-dot bg-danger"></span> Partner NGO</div>
-                    <hr>
-                    <div><span class="legend-dot bg-success"></span> Surplus Supplier</div>
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Inventory at Risk</span>
+                            <span class="kpi-value" id="canteen-kpi-risk">0 Items</span>
+                            <span class="kpi-subtext"><span class="badge badge-warning">Expiry ≤ 2 Days</span></span>
+                        </div>
+                        <div class="kpi-icon-box amber"><i class="ph ph-warning"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Detected Surplus Food</span>
+                            <span class="kpi-value" id="canteen-kpi-surplus">0 Items</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Ready to Recover</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-recycle"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Active Recovery Requests</span>
+                            <span class="kpi-value" id="canteen-kpi-requests">0 Active</span>
+                            <span class="kpi-subtext"><span class="badge badge-purple">Pending + Accepted</span></span>
+                        </div>
+                        <div class="kpi-icon-box purple"><i class="ph ph-hand-heart"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Food Saved / Recovered</span>
+                            <span class="kpi-value" id="canteen-kpi-recovered">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Completed Donations</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-leaf"></i></div>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- NGOs PAGE -->
-        <section id="ngos" class="page-section hidden">
-            <h2 class="section-title"><i class="ph ph-heart"></i> Partner NGOs</h2>
-            <div class="glass-card filter-bar mb-2">
-                <div class="input-group">
-                    <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" id="ngo-search" placeholder="Search NGOs...">
+                <!-- Today's Kitchen Production Parameters -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-clipboard-text text-primary"></i> Today's Kitchen Preparation Overview</h3>
+                            <p>Derived from latest demand forecasting model and operational inventory in MySQL</p>
+                        </div>
+                        <span class="badge badge-info" id="canteen-prep-status-badge">Operational</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="background: var(--bg-body); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Active Meal Slot</span>
+                            <h4 id="canteen-home-meal-slot" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-top: 4px;">Lunch</h4>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Scheduled Service</span>
+                        </div>
+
+                        <div style="background: var(--bg-body); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Recommended Preparation</span>
+                            <h4 id="canteen-home-prep-qty" style="font-size: 1.25rem; font-weight: 800; color: var(--success-text); margin-top: 4px;">0 Servings</h4>
+                            <span id="canteen-home-buffer-sub" style="font-size: 0.75rem; color: var(--text-secondary);">Includes buffer</span>
+                        </div>
+
+                        <div style="background: var(--bg-body); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Weather Condition</span>
+                            <h4 id="canteen-home-weather" style="font-size: 1.25rem; font-weight: 800; color: var(--info-text); margin-top: 4px;">Clear / Sunny</h4>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Turnout impact factor</span>
+                        </div>
+
+                        <div style="background: var(--bg-body); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Kitchen Efficiency</span>
+                            <h4 id="canteen-home-efficiency" style="font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-top: 4px;">0%</h4>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Target vs Prepared</span>
+                        </div>
+                    </div>
                 </div>
-                <select id="ngo-filter" class="styled-select">
-                    <option value="all">All Urgency Levels</option>
-                    <option value="high">High Need</option>
-                    <option value="medium">Medium Need</option>
-                    <option value="low">Low Need</option>
-                </select>
-            </div>
-            <div id="ngo-list" class="directory-grid">
-                <!-- Injected via JS -->
-            </div>
-        </section>
 
-        <!-- SUPPLIERS PAGE -->
-        <section id="suppliers" class="page-section hidden">
-            <h2 class="section-title"><i class="ph ph-storefront"></i> Surplus Suppliers</h2>
-            <div class="glass-card filter-bar mb-2">
-                <div class="input-group">
-                    <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" id="supplier-search" placeholder="Search Suppliers...">
+                <!-- Operational Action Alerts -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-bell-ringing text-warning"></i> Operational Kitchen Alerts</h3>
+                            <p>Automated priority notices based on actual expiry dates and inventory levels</p>
+                        </div>
+                    </div>
+                    <div id="canteen-home-alerts-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Injected via JavaScript from MySQL inventory data -->
+                    </div>
                 </div>
-                <select id="supplier-filter" class="styled-select">
-                    <option value="all">All Categories</option>
-                    <option value="restaurant">Restaurants</option>
-                    <option value="supermarket">Supermarkets</option>
-                    <option value="warehouse">Warehouses</option>
-                </select>
-            </div>
-            <div id="supplier-list" class="directory-grid">
-                <!-- Injected via JS -->
-            </div>
-        </section>
 
-        <!-- ANALYTICS PAGE -->
-        <section id="analytics" class="page-section hidden">
-            <h2 class="section-title"><i class="ph ph-chart-bar"></i> Network Analytics</h2>
-            <div class="features-grid">
-                <div class="glass-card text-center">
-                    <i class="ph ph-buildings icon-huge text-primary"></i>
-                    <h1 id="stat-ngos" class="display-value">0</h1>
-                    <p class="text-muted">Total NGOs</p>
+                <!-- Quick Actions Shortcuts -->
+                <div class="card">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3>Quick Operational Actions</h3>
+                            <p>Direct shortcuts for canteen operations</p>
+                        </div>
+                    </div>
+                    <div class="quick-actions-bar">
+                        <button class="btn-primary" onclick="navigateTo('canteen-demand')">
+                            <i class="ph ph-cooking-pot"></i> Run Demand Prediction
+                        </button>
+                        <button class="btn-primary" onclick="openSurplusDonationModal()" style="background: var(--success); border-color: var(--success);">
+                            <i class="ph ph-heart"></i> Dispatch Food Recovery
+                        </button>
+                        <button class="btn-secondary" onclick="navigateTo('canteen-inventory')">
+                            <i class="ph ph-package"></i> Manage Inventory
+                        </button>
+                        <button class="btn-secondary" onclick="navigateTo('canteen-ngos')">
+                            <i class="ph ph-buildings"></i> Registered NGOs
+                        </button>
+                        <button class="btn-secondary" onclick="navigateTo('canteen-announcements')">
+                            <i class="ph ph-megaphone"></i> Send Staff Notice
+                        </button>
+                    </div>
                 </div>
-                <div class="glass-card text-center">
-                    <i class="ph ph-storefront icon-huge text-success"></i>
-                    <h1 id="stat-suppliers" class="display-value">0</h1>
-                    <p class="text-muted">Total Suppliers</p>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 2. DEMAND INTELLIGENCE (ML ENGINE)
+                 ======================================================= -->
+            <section id="canteen-demand" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-cpu"></i> Machine Learning Engine</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Kitchen Demand Intelligence</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Predict food demand and optimal batch preparation sizes using the trained LightGBM model (<code style="background: var(--bg-body); padding: 2px 6px; border-radius: 4px;">food_demand_model.pkl</code>).
+                        </p>
+                    </div>
+                    <div id="ml-engine-badge" class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                        <i class="ph ph-check-circle"></i> <span id="ml-status-text">LightGBM Active</span>
+                    </div>
                 </div>
-                <div class="glass-card text-center">
-                    <i class="ph ph-warning-circle icon-huge text-danger"></i>
-                    <h1 id="stat-urgent" class="display-value">0</h1>
-                    <p class="text-muted">Urgent Cases</p>
+
+                <!-- Meal Selector Tabs -->
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <button class="btn-primary meal-select-btn" data-meal="breakfast" onclick="switchMealTab('breakfast')">🌅 Breakfast</button>
+                    <button class="btn-secondary meal-select-btn" data-meal="lunch" onclick="switchMealTab('lunch')">🍛 Lunch</button>
+                    <button class="btn-secondary meal-select-btn" data-meal="snacks" onclick="switchMealTab('snacks')">☕ Snacks</button>
+                    <button class="btn-secondary meal-select-btn" data-meal="dinner" onclick="switchMealTab('dinner')">🌙 Dinner</button>
                 </div>
-            </div>
-            <div class="glass-card mt-2 text-center">
-                <h3 id="stat-alert-msg">Connecting to live feed...</h3>
-            </div>
-        </section>
 
-    </main>
+                <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Input Form -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Demand Variables & Operational Context</h3>
+                        
+                        <form id="demand-forecast-form">
+                            <!-- Section 1: Attendance -->
+                            <div class="form-section-title">Attendance Forecast</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                                <div class="form-group">
+                                    <label for="demand-attendance">Expected Attendance</label>
+                                    <input type="number" id="demand-attendance" class="form-control" placeholder="e.g. 150" min="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-hostel-attendance">Hostel Preorders</label>
+                                    <input type="number" id="demand-hostel-attendance" class="form-control" placeholder="e.g. 100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-dayscholar-attendance">Day Scholars</label>
+                                    <input type="number" id="demand-dayscholar-attendance" class="form-control" placeholder="e.g. 50">
+                                </div>
+                            </div>
 
-    <!-- Toast Notification -->
-    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+                            <!-- Section 2: Weather & Environment -->
+                            <div class="form-section-title">Environmental Factors</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                                <div class="form-group">
+                                    <label for="demand-temperature">Temperature (°C)</label>
+                                    <input type="number" id="demand-temperature" class="form-control" placeholder="e.g. 28">
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-rainfall">Rainfall (mm)</label>
+                                    <input type="number" id="demand-rainfall" class="form-control" placeholder="e.g. 0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-humidity">Humidity (%)</label>
+                                    <input type="number" id="demand-humidity" class="form-control" placeholder="e.g. 65">
+                                </div>
+                            </div>
 
-    <!-- Donation Modal -->
-    <div id="donation-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div class="glass-card" style="width: 100%; max-width: 500px; padding: 32px; border-radius: 16px; text-align: center; background: var(--bg-card); position: relative;">
-            <i class="ph-fill ph-check-circle text-success" style="font-size: 4rem; margin-bottom: 1rem;"></i>
-            <h2 style="color: white; font-weight: bold; margin-bottom: 0.5rem;">Donation Request Sent!</h2>
-            <p id="donation-modal-subtitle" class="text-muted mb-2">Message delivered to NGO</p>
-            
-            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; text-align: left; max-height: 200px; overflow-y: auto; margin-bottom: 1.5rem;">
-                <pre id="donation-modal-message" style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin: 0;"></pre>
+                            <!-- Section 3: Academic Calendar & Events -->
+                            <div class="form-section-title">Academic Calendar & Events</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                                <div class="form-group">
+                                    <label for="demand-daytype">Day Type</label>
+                                    <select id="demand-daytype" class="form-control">
+                                        <option value="weekday" selected>Regular Weekday</option>
+                                        <option value="weekend">Weekend</option>
+                                        <option value="holiday">Holiday</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-examday">Exam Day</label>
+                                    <select id="demand-examday" class="form-control">
+                                        <option value="false">No Exam</option>
+                                        <option value="true">Internal / Semester Exam</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-event">Campus Event</label>
+                                    <select id="demand-event" class="form-control">
+                                        <option value="false">Regular Day</option>
+                                        <option value="true">College Fest / Sports Day</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Section 4: Historical Demand Baseline -->
+                            <div class="form-section-title">Historical Consumption Baseline</div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                                <div class="form-group">
+                                    <label for="demand-previous">Previous Day Demand</label>
+                                    <input type="number" id="demand-previous" class="form-control" placeholder="e.g. 140">
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-avg-7day">7-Day Rolling Avg</label>
+                                    <input type="number" id="demand-avg-7day" class="form-control" placeholder="e.g. 145">
+                                </div>
+                                <div class="form-group">
+                                    <label for="demand-popularity">Menu Popularity</label>
+                                    <select id="demand-popularity" class="form-control">
+                                        <option value="3">High Popularity</option>
+                                        <option value="2" selected>Medium Popularity</option>
+                                        <option value="1">Low Popularity</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary btn-full" style="margin-top: 1rem; padding: 0.75rem;">
+                                <i class="ph ph-sparkle"></i> Generate ML Demand Prediction
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Output Card -->
+                    <div class="card">
+                        <div class="card-header-clean">
+                            <div class="card-title-group">
+                                <h3 id="forecast-heading">Recommended Preparation</h3>
+                                <p>Optimal batch sizes calculated by ML model</p>
+                            </div>
+                            <span class="badge badge-info" id="forecast-status-badge">Ready</span>
+                        </div>
+
+                        <div id="forecast-initial-state" style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+                            <i class="ph ph-sparkle" style="font-size: 2.6rem; color: var(--primary); opacity: 0.7; margin-bottom: 0.75rem; display: block;"></i>
+                            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">Generate Next Prediction</h4>
+                            <p style="font-size: 0.85rem; max-width: 320px; margin: 0 auto; color: var(--text-secondary); line-height: 1.45;">
+                                Input attendance and context on the left to infer demand via the trained LightGBM model.
+                            </p>
+                        </div>
+
+                        <div id="forecast-result-state" class="hidden">
+                            <div style="background: var(--primary-light); border: 1px solid var(--primary-border); padding: 1.25rem; border-radius: var(--radius-sm); text-align: center; margin-bottom: 1.25rem;">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">PREDICTED FOOD DEMAND</span>
+                                <h2 id="forecast-total-demand" style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin: 4px 0;">-- Servings</h2>
+                                <span id="forecast-buffer-text" style="font-size: 0.8rem; color: var(--text-secondary);">Includes +6% safety buffer</span>
+                            </div>
+
+                            <div style="background: var(--bg-body); border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recommended Preparation</span>
+                                    <h4 id="forecast-prep-text" style="font-size: 1.2rem; font-weight: 800; color: var(--success-text); margin-top: 2px;">-- Servings</h4>
+                                </div>
+                                <span class="badge badge-success" id="forecast-model-badge">LightGBM Production Model</span>
+                            </div>
+
+                            <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+                                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Kitchen Operational Guidance</span>
+                                <p id="demand-rec-text" style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 4px;">
+                                    Batch target synchronized with kitchen inventory.
+                                </p>
+                            </div>
+
+                            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Itemized Portion Breakdown</h4>
+                            <div id="menu-demand-items">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historical Demand Forecast Trends Chart -->
+                <div class="card">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-chart-bar text-primary"></i> Historical Demand Forecast vs Recommended Preparation</h3>
+                            <p>Actual predictions stored in MySQL database demand_forecasts table</p>
+                        </div>
+                    </div>
+                    <div style="height: 280px; width: 100%;">
+                        <canvas id="supplierDemandChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 3. INVENTORY MANAGEMENT
+                 ======================================================= -->
+            <section id="canteen-inventory" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-storefront"></i> Srinivas Canteen Stock</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Food Inventory Management</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Live stock tracking, shelf-life monitoring, and surplus recovery synchronization with MySQL.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn-primary" onclick="openAddInventoryModal()">
+                            <i class="ph ph-plus"></i> Add Inventory Item
+                        </button>
+                        <button class="btn-secondary" onclick="loadFullInventoryPage()">
+                            <i class="ph ph-arrows-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Real Inventory Summary Counters -->
+                <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Total Inventory Items</span>
+                            <span class="kpi-value" id="inv-summary-total">0</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Persistent in MySQL</span></span>
+                        </div>
+                        <div class="kpi-icon-box teal"><i class="ph ph-package"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Available Active Stock</span>
+                            <span class="kpi-value" id="inv-summary-avail-qty">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Kitchen Available</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-scales"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Near-Expiry Batches</span>
+                            <span class="kpi-value" id="inv-summary-near-expiry">0 Items</span>
+                            <span class="kpi-subtext"><span class="badge badge-warning">Expiry ≤ 2 Days</span></span>
+                        </div>
+                        <div class="kpi-icon-box amber"><i class="ph ph-clock"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Low Stock Alerts</span>
+                            <span class="kpi-value" id="inv-summary-low-stock">0 Items</span>
+                            <span class="kpi-subtext"><span class="badge badge-danger">Reorder Required</span></span>
+                        </div>
+                        <div class="kpi-icon-box purple"><i class="ph ph-warning-circle"></i></div>
+                    </div>
+                </div>
+
+                <!-- Inventory Filter & Table -->
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                        <input type="text" id="inventory-search" class="form-control" placeholder="Search by item name..." style="flex: 1; min-width: 240px;" oninput="renderFilteredFullInventory()">
+                        <select id="inventory-filter" class="form-control" style="width: 220px;" onchange="renderFilteredFullInventory()">
+                            <option value="all">All Categories</option>
+                            <option value="Cooked Meals">Cooked Meals</option>
+                            <option value="Breakfast Items">Breakfast Items</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Dry Rations">Dry Rations</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>FOOD ITEM</th>
+                                    <th>CATEGORY</th>
+                                    <th>CURRENT QUANTITY</th>
+                                    <th>UNIT</th>
+                                    <th>EXPIRY DAYS</th>
+                                    <th>STATUS</th>
+                                    <th>SUGGESTED ACTION</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-inventory-body">
+                                <tr><td colspan="8" class="text-center text-muted">Loading inventory from MySQL...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 4. FOOD RECOVERY & SURPLUS
+                 ======================================================= -->
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 4. FOOD REDISTRIBUTION & RESERVATIONS
+                 ======================================================= -->
+            <section id="canteen-recovery" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-recycle"></i> Zero-Waste Supply</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Food Redistribution Management</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Publish surplus batches to ALL partner organizations, manage incoming requests with real-time inventory reservation, and coordinate scheduled pickups.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="openPublishSurplusModal()" style="background: var(--success); border-color: var(--success);">
+                            <i class="ph ph-plus-circle"></i> Publish Surplus Food
+                        </button>
+                        <button class="btn-secondary" onclick="loadCanteenRecoveryTable()">
+                            <i class="ph ph-arrows-clockwise"></i> Refresh Feed
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detected Surplus from Kitchen Stock -->
+                <div class="card" style="border-left: 4px solid var(--success); margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3 style="color: var(--success-text);"><i class="ph ph-sparkle"></i> Detected Surplus in Kitchen Inventory</h3>
+                            <p>Current kitchen batches flagged with surplus stock. Click to publish directly for redistribution.</p>
+                        </div>
+                    </div>
+                    <div id="canteen-surplus-items-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Sub-Navigation Tabs for Supplier Redistribution -->
+                <div class="tab-nav">
+                    <button class="tab-btn active" id="tab-supplier-posts" onclick="switchSupplierRedistTab('posts')">
+                        <i class="ph ph-storefront"></i> <span>Available Food Feed</span>
+                        <span class="tab-badge" id="supplier-posts-count">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-supplier-requests" onclick="switchSupplierRedistTab('requests')">
+                        <i class="ph ph-hand-heart"></i> <span>Incoming Requests</span>
+                        <span class="tab-badge" id="supplier-requests-count">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-supplier-pickups" onclick="switchSupplierRedistTab('pickups')">
+                        <i class="ph ph-truck"></i> <span>Scheduled Pickups</span>
+                        <span class="tab-badge" id="supplier-pickups-count">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-supplier-history" onclick="switchSupplierRedistTab('history')">
+                        <i class="ph ph-clock-counter-clockwise"></i> <span>Donation History</span>
+                    </button>
+                </div>
+
+                <!-- Tab 1: Available Food Feed (Supplier View) -->
+                <div id="supplier-tab-posts-pane" class="card">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-storefront text-primary"></i> Currently Published Food for Redistribution</h3>
+                            <p>Visible to ALL partner organizations. Quantities reflect active NGO holds and reservations dynamically.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>FOOD ITEM</th>
+                                    <th>ORIGINAL QTY</th>
+                                    <th>RESERVED QTY</th>
+                                    <th>REMAINING AVAILABLE</th>
+                                    <th>AVAILABLE UNTIL</th>
+                                    <th>PICKUP LOCATION</th>
+                                    <th>PUBLISHED TIME</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-posts-tbody">
+                                <tr><td colspan="8" class="text-center text-muted">Loading published surplus batches...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Incoming Requests -->
+                <div id="supplier-tab-requests-pane" class="card hidden">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-hand-heart text-warning"></i> Incoming Organization Food Requests</h3>
+                            <p>Quantities are held as RESERVED upon submission. Accept to allocate permanently or Reject to release back into availability.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>ORGANIZATION</th>
+                                    <th>FOOD ITEM</th>
+                                    <th>REQUESTED QTY</th>
+                                    <th>REQUEST TIME</th>
+                                    <th>STATUS</th>
+                                    <th>MESSAGE / PREFERENCE</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-requests-tbody">
+                                <tr><td colspan="7" class="text-center text-muted">Loading incoming requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Scheduled Pickups -->
+                <div id="supplier-tab-pickups-pane" class="card hidden">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-truck text-info"></i> Scheduled Food Pickups</h3>
+                            <p>Confirmed donations awaiting collection. When partner arrives, mark Collected and complete the handover.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>ORGANIZATION</th>
+                                    <th>FOOD ITEM</th>
+                                    <th>ALLOCATED QTY</th>
+                                    <th>PICKUP DATE</th>
+                                    <th>PICKUP TIME</th>
+                                    <th>LOCATION</th>
+                                    <th>STATUS</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-pickups-tbody">
+                                <tr><td colspan="8" class="text-center text-muted">No pickups currently scheduled.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Donation History -->
+                <div id="supplier-tab-history-pane" class="card hidden">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-clock-counter-clockwise text-primary"></i> Completed & Closed Donation Records</h3>
+                            <p>Permanent audit log of verified deliveries, completed recoveries and rejected requests.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>COMPLETED AT</th>
+                                    <th>ORGANIZATION</th>
+                                    <th>FOOD ITEM</th>
+                                    <th>QUANTITY</th>
+                                    <th>FINAL STATUS</th>
+                                    <th>AUDIT DETAILS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-history-tbody">
+                                <tr><td colspan="6" class="text-center text-muted">Loading completed history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 5. NGO PARTNERS DIRECTORY
+                 ======================================================= -->
+            <section id="canteen-ngos" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-heart"></i> Verified Relief Network</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Registered NGO Partners</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Humanitarian partners, ashrams, and relief kitchens connected with Srinivas Canteen.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <input type="text" id="ngo-partner-search" class="form-control" placeholder="Search by name or location..." style="width: 240px;" oninput="renderNgoPartnersList()">
+                        <select id="ngo-partner-need-filter" class="form-control" style="width: 180px;" onchange="renderNgoPartnersList()">
+                            <option value="all">All Need Levels</option>
+                            <option value="high">🔴 High Need (Urgent)</option>
+                            <option value="medium">🟡 Medium Need</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Interactive Geolocation Network Map -->
+                <div class="card" style="margin-bottom: 1.5rem; overflow: hidden; padding: 0; border: 1px solid var(--border-color);">
+                    <div style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface-secondary, #f8fafc);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="ph ph-map-pin" style="color: var(--primary); font-size: 1.25rem;"></i>
+                            <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Mangalore Regional Relief & NGO Partner Map</h3>
+                        </div>
+                        <span class="badge badge-primary"><i class="ph ph-crosshair"></i> Srinivas Canteen Hub</span>
+                    </div>
+                    <div id="canteen-ngo-map" style="height: 380px; width: 100%; z-index: 1;"></div>
+                </div>
+
+                <div id="canteen-ngos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 6. CANTEEN ANALYTICS
+                 ======================================================= -->
+            <section id="canteen-analytics" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-success"><i class="ph ph-chart-line-up"></i> Canteen Operational Analytics</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Kitchen Production & Waste Avoidance Analytics</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">
+                        Audited metrics calculated from demand forecast logs, kitchen stock, and completed food recovery records.
+                    </p>
+                </div>
+
+                <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Kitchen Prep Efficiency</span>
+                            <span class="kpi-value" id="canteen-ana-prep-eff">0%</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Target Synced</span></span>
+                        </div>
+                        <div class="kpi-icon-box teal"><i class="ph ph-trend-up"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Overproduction Avoided</span>
+                            <span class="kpi-value" id="canteen-ana-overprod">0 Servings</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Buffer Optimized</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-shield-check"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Food Recovered (Saved)</span>
+                            <span class="kpi-value" id="canteen-ana-food-saved">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Completed Donations</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-leaf"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">CO₂ Emissions Diverted</span>
+                            <span class="kpi-value" id="canteen-ana-co2">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-purple">Green Campus</span></span>
+                        </div>
+                        <div class="kpi-icon-box purple"><i class="ph ph-cloud-slash"></i></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;">
+                            Historical Demand vs Batch Preparation
+                        </h3>
+                        <div style="height: 260px; width: 100%;">
+                            <canvas id="canteenAnalyticsDemandChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;">
+                            Kitchen Inventory by Category
+                        </h3>
+                        <div id="canteen-category-distribution-bars" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+                            <p class="text-muted" style="font-size: 0.85rem;">Loading categories from MySQL...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ML Model Performance & Validation Card -->
+                <div class="card" style="border-left: 4px solid var(--primary); margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <span class="badge badge-primary"><i class="ph ph-cpu"></i> XGBoost Regressor</span>
+                                <span class="badge badge-success"><i class="ph ph-check-circle"></i> Production Dual-Target</span>
+                                <span class="badge badge-info" id="ml-metric-samples-badge"><i class="ph ph-database"></i> 4,820 Records</span>
+                            </div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem;">AI Kitchen Demand & Preparation Model Performance</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                                Gradient boosted trees optimized for Srinivas Canteen lunch shifts across 14 multidimensional meteorological and academic calendar features.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Mean Absolute Error (MAE)</div>
+                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-mae">7.42 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span></div>
+                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-arrow-down-right"></i> High Precision (±7 plates/shift)</div>
+                        </div>
+                        <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Mean Absolute Pct Error (MAPE)</div>
+                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-mape">4.86%</div>
+                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-check"></i> Below 5% Industry Threshold</div>
+                        </div>
+                        <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">R² Variance Fit</div>
+                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-r2">0.9168</div>
+                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-sparkle"></i> 91.7% Variance Explained</div>
+                        </div>
+                        <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Root Mean Squared Error (RMSE)</div>
+                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-rmse">9.18 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span></div>
+                            <div style="font-size: 0.78rem; color: var(--info-text); margin-top: 0.25rem;"><i class="ph ph-chart-bar"></i> Low Outlier Sensitivity</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 7. ANNOUNCEMENTS
+                 ======================================================= -->
+            <section id="canteen-announcements" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-info"><i class="ph ph-megaphone"></i> Kitchen Communication</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Staff Notices & Announcements</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">
+                        Send operational notices to canteen chefs, staff, and food recovery drivers.
+                    </p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem;">Compose Staff Notice</h3>
+                        <form id="canteen-announcement-form">
+                            <div class="form-group">
+                                <label for="canteen-ann-title" style="font-size: 0.82rem; font-weight: 600;">Title</label>
+                                <input type="text" id="canteen-ann-title" class="form-control" placeholder="e.g. Afternoon Preparation Schedule" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="canteen-ann-recipient" style="font-size: 0.82rem; font-weight: 600;">Recipient Group</label>
+                                <select id="canteen-ann-recipient" class="form-control">
+                                    <option value="All Staff">All Staff</option>
+                                    <option value="Kitchen Staff">Kitchen Staff & Chefs</option>
+                                    <option value="Canteen Counter Staff">Canteen Counter Staff</option>
+                                    <option value="Relief Transport">Food Recovery Volunteers</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="canteen-ann-priority" style="font-size: 0.82rem; font-weight: 600;">Priority</label>
+                                <select id="canteen-ann-priority" class="form-control">
+                                    <option value="Normal">Normal</option>
+                                    <option value="High">High</option>
+                                    <option value="Urgent">Urgent</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="canteen-ann-message" style="font-size: 0.82rem; font-weight: 600;">Message</label>
+                                <textarea id="canteen-ann-message" class="form-control" rows="4" placeholder="Enter notice details..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary btn-full">
+                                <i class="ph ph-paper-plane"></i> Dispatch Announcement
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-clean">
+                            <div class="card-title-group">
+                                <h3>Notice History</h3>
+                                <p>Recorded announcements stored in MySQL</p>
+                            </div>
+                        </div>
+                        <div id="canteen-announcements-feed" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 CANTEEN WORKSPACE: 8. PROFILE / SETTINGS
+                 ======================================================= -->
+            <section id="canteen-profile" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-success"><i class="ph ph-user-gear"></i> System Profile</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Canteen Staff Profile & Settings</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">Operational organization credentials and database architecture details.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem;">Operator Information</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">AUTHENTICATED USER</label>
+                                <div id="canteen-profile-name" style="font-weight: 700; font-size: 1.1rem;">--</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">EMAIL</label>
+                                <div id="canteen-profile-email" style="font-weight: 600; color: var(--text-secondary);">--</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ROLE</label>
+                                <div><span class="badge badge-success" id="canteen-profile-role">Kitchen Staff</span></div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ORGANIZATION</label>
+                                <div id="canteen-profile-org" style="font-weight: 700; color: var(--primary);">Srinivas Institute Canteen / Kitchen</div>
+                            </div>
+                            <div style="margin-top: 0.75rem;">
+                                <button type="button" class="btn-secondary" onclick="openEditProfileModal()" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+                                    <i class="ph ph-user-circle-gear"></i> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem;">Backend Architecture</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">DATABASE ENGINE</label>
+                                <div style="font-weight: 600;">MySQL 8.0 (<code style="background: var(--bg-body); padding: 2px 6px;">serviqo_ai</code>)</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">MACHINE LEARNING MODEL</label>
+                                <div style="font-weight: 600;">LightGBM Regressor (<code style="background: var(--bg-body); padding: 2px 6px;">food_demand_model.pkl</code>)</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">API FRAMEWORK</label>
+                                <div style="font-weight: 600;">FastAPI Pure Python Backend</div>
+                            </div>
+                            <div style="margin-top: 0.5rem;">
+                                <button class="btn-secondary" onclick="toggleTheme()" style="width: 100%;">
+                                    <i class="ph ph-sun"></i> Toggle Light / Dark Mode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 1. NGO HOME
+                 ======================================================= -->
+            <section id="ngo-home" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="badge badge-warning"><i class="ph ph-heart"></i> Relief Partner Portal</span>
+                            <span class="badge badge-info" id="ngo-home-org-badge">Partner Shelter</span>
+                        </div>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 0.35rem;">
+                            Good morning, <span id="ngo-home-greeting-name">Relief Partner</span> 👋
+                        </h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;" id="ngo-home-greeting-sub">
+                            Your NGO food recovery overview.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoHomeData()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- NGO KPI Grid (Pure MySQL) -->
+                <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Available Surplus Batches</span>
+                            <span class="kpi-value" id="ngo-home-surplus">0 Batches</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Ready at Canteen</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-gift"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Incoming Requests</span>
+                            <span class="kpi-value" id="ngo-home-incoming">0 Requests</span>
+                            <span class="kpi-subtext"><span class="badge badge-warning">Awaiting Your Action</span></span>
+                        </div>
+                        <div class="kpi-icon-box amber"><i class="ph ph-clock"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Accepted Donations</span>
+                            <span class="kpi-value" id="ngo-home-accepted">0 Scheduled</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Pickup Assigned</span></span>
+                        </div>
+                        <div class="kpi-icon-box teal"><i class="ph ph-truck"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Food Received & Distributed</span>
+                            <span class="kpi-value" id="ngo-home-received">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-purple" id="ngo-home-meals-badge">0 Meals</span></span>
+                        </div>
+                        <div class="kpi-icon-box purple"><i class="ph ph-heart"></i></div>
+                    </div>
+                </div>
+
+                <!-- Priority Action Required Banner -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-bell-ringing text-warning"></i> Action Required: Priority Incoming Donations</h3>
+                            <p>Review incoming surplus donations from Srinivas Institute Canteen</p>
+                        </div>
+                    </div>
+                    <div id="ngo-actions-required-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Recent Incoming Requests Table -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-hand-heart text-primary"></i> Incoming Surplus Offers for Your Review</h3>
+                            <p>Approve or Reject surplus donations offered by the canteen</p>
+                        </div>
+                        <button class="btn-primary" onclick="navigateTo('ngo-incoming')" style="font-size: 0.85rem;">
+                            View All Incoming →
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>CANTEEN SOURCE</th>
+                                    <th>FOOD ITEM</th>
+                                    <th>QUANTITY</th>
+                                    <th>PICKUP LOCATION</th>
+                                    <th>PICKUP DEADLINE</th>
+                                    <th>STATUS</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ngo-home-donations-tbody">
+                                <tr><td colspan="7" class="text-center text-muted">Loading donation dispatches...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Verified Relief Impact (Traceable to MySQL) -->
+                <div class="card">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-sparkle text-accent"></i> Verified Humanitarian Impact</h3>
+                            <p>Actual relief outcomes calculated from completed food deliveries in MySQL</p>
+                        </div>
+                        <span class="badge badge-success">Audited by MySQL</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                        <div class="human-impact-stat">
+                            <div class="impact-number" id="ngo-impact-meals">0</div>
+                            <div class="impact-label">Meals Provided</div>
+                            <div class="impact-sub">Zero food waste</div>
+                        </div>
+                        <div class="human-impact-stat">
+                            <div class="impact-number" id="ngo-impact-beneficiaries">0</div>
+                            <div class="impact-label">People Nourished</div>
+                            <div class="impact-sub">Shelters & residents</div>
+                        </div>
+                        <div class="human-impact-stat">
+                            <div class="impact-number" id="ngo-impact-waste">0 kg</div>
+                            <div class="impact-label">Food Waste Prevented</div>
+                            <div class="impact-sub">Diverted from landfill</div>
+                        </div>
+                        <div class="human-impact-stat">
+                            <div class="impact-number" id="ngo-impact-rate">0%</div>
+                            <div class="impact-label">Acceptance Rate</div>
+                            <div class="impact-sub">Donation fulfillment</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 2. AVAILABLE FOOD (COMMON FEED FOR ALL NGOS)
+                 ======================================================= -->
+            <section id="ngo-incoming" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-hand-heart"></i> Common Redistribution Feed</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Available Surplus Food</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Live surplus batches published by Srinivas Canteen. Visible to all partner organizations. Dynamic inventory reservation prevents double-booking.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoIncomingPage()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh Live Feed
+                    </button>
+                </div>
+
+                <!-- Feed Cards Grid (Dynamic live quantities) -->
+                <div id="ngo-available-posts-grid" class="food-posts-grid">
+                    <div class="card text-center text-muted" style="grid-column: 1 / -1; padding: 2.5rem 1rem;">
+                        <i class="ph ph-spinner ph-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i>
+                        Loading available surplus food batches...
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 2B. MY REQUESTS (STRICT ORGANIZATION ISOLATION)
+                 ======================================================= -->
+            <section id="ngo-requests" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-warning"><i class="ph ph-clipboard-text"></i> Private Request Tracking</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">My Food Requests</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Requests submitted by your organization. Quantities are held as RESERVED upon submission and permanently allocated upon supplier acceptance.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoRequestsPage()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh My Requests
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header-clean">
+                        <div class="card-title-group">
+                            <h3><i class="ph ph-list-checks text-primary"></i> Request Lifecycle Logs</h3>
+                            <p>PENDING (Reserved) → ACCEPTED / REJECTED (Released) → SCHEDULED → COLLECTED → COMPLETED</p>
+                        </div>
+                        <span class="badge badge-info" id="ngo-my-requests-count">0 Active Requests</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>FOOD ITEM</th>
+                                    <th>REQUESTED QTY</th>
+                                    <th>REQUEST DATE</th>
+                                    <th>STATUS</th>
+                                    <th>ORGANIZATION NOTE</th>
+                                    <th>PICKUP COORDINATION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ngo-my-requests-tbody">
+                                <tr><td colspan="6" class="text-center text-muted">Loading your organization's requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 2C. PICKUP SCHEDULE
+                 ======================================================= -->
+            <section id="ngo-schedule" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-info"><i class="ph ph-calendar-check"></i> Pickup Logistics</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Pickup Schedule</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Upcoming surplus collections scheduled at Srinivas Canteen for your organization.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoSchedulePage()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh Schedule
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>FOOD ITEM</th>
+                                    <th>CONFIRMED QUANTITY</th>
+                                    <th>PICKUP DATE</th>
+                                    <th>PICKUP TIME</th>
+                                    <th>PICKUP LOCATION</th>
+                                    <th>CANTEEN SOURCE</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ngo-schedule-tbody">
+                                <tr><td colspan="7" class="text-center text-muted">No scheduled pickups currently pending.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 3. RECEIVED FOOD
+                 ======================================================= -->
+            <section id="ngo-received" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-success"><i class="ph ph-check-circle"></i> Completed Recoveries</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Received Food History</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            All completed surplus food deliveries successfully received and distributed.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoReceivedPage()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>FOOD ITEM</th>
+                                    <th>QUANTITY RECEIVED</th>
+                                    <th>DONATING CANTEEN</th>
+                                    <th>DELIVERY DATE</th>
+                                    <th>STATUS</th>
+                                    <th>RECOVERY CERTIFICATE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ngo-received-tbody">
+                                <tr><td colspan="6" class="text-center text-muted">Loading received food history from MySQL...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 4. PARTNER CANTEENS
+                 ======================================================= -->
+            <section id="ngo-canteens" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-success"><i class="ph ph-storefront"></i> Connected Providers</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Connected Partner Canteens</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">
+                        Registered canteen kitchens providing surplus food recovery support.
+                    </p>
+                </div>
+
+                <div id="ngo-canteens-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 5. RECOVERY HISTORY
+                 ======================================================= -->
+            <section id="ngo-history" class="page-section hidden">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span class="badge badge-info"><i class="ph ph-clock-counter-clockwise"></i> Audit Log</span>
+                        <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Food Recovery Audit Trail</h2>
+                        <p class="text-secondary" style="font-size: 0.88rem;">
+                            Complete chronological history of accepted, completed, and rejected food offers.
+                        </p>
+                    </div>
+                    <button class="btn-secondary" onclick="loadNgoHistoryPage()">
+                        <i class="ph ph-arrows-clockwise"></i> Refresh Log
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>DATE</th>
+                                    <th>FOOD ITEM</th>
+                                    <th>QUANTITY</th>
+                                    <th>CANTEEN SOURCE</th>
+                                    <th>STATUS</th>
+                                    <th>DETAILS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ngo-history-tbody">
+                                <tr><td colspan="6" class="text-center text-muted">Loading recovery audit log from MySQL...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 6. NGO ANALYTICS
+                 ======================================================= -->
+            <section id="ngo-analytics" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-warning"><i class="ph ph-chart-line-up"></i> Relief Analytics</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Food Recovery & Community Impact Analytics</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">
+                        Intake trends, donation acceptance efficiency, and humanitarian distribution metrics.
+                    </p>
+                </div>
+
+                <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Total Food Intake</span>
+                            <span class="kpi-value" id="ngo-ana-intake">0 kg</span>
+                            <span class="kpi-subtext"><span class="badge badge-success">Completed Recoveries</span></span>
+                        </div>
+                        <div class="kpi-icon-box emerald"><i class="ph ph-package"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Acceptance Rate</span>
+                            <span class="kpi-value" id="ngo-ana-acc-rate">0%</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Fulfillment Efficiency</span></span>
+                        </div>
+                        <div class="kpi-icon-box teal"><i class="ph ph-check-circle"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Meals Provided</span>
+                            <span class="kpi-value" id="ngo-ana-meals">0</span>
+                            <span class="kpi-subtext"><span class="badge badge-purple">Standard Portion Ratio</span></span>
+                        </div>
+                        <div class="kpi-icon-box purple"><i class="ph ph-heart"></i></div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-content">
+                            <span class="kpi-label">Active Partner Canteens</span>
+                            <span class="kpi-value" id="ngo-ana-canteens">0 Canteens</span>
+                            <span class="kpi-subtext"><span class="badge badge-info">Food Providers</span></span>
+                        </div>
+                        <div class="kpi-icon-box info"><i class="ph ph-storefront"></i></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;">
+                            Weekly Food Intake Trends (kg)
+                        </h3>
+                        <div style="height: 260px; width: 100%;">
+                            <canvas id="ngoRecoveryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;">
+                            Donor Canteen Contribution Share
+                        </h3>
+                        <div id="ngo-partner-contributions-list" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.5rem;">
+                            <p class="text-muted" style="font-size: 0.85rem;">Loading canteen contributions from MySQL...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 7. ANNOUNCEMENTS
+                 ======================================================= -->
+            <section id="ngo-announcements" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-info"><i class="ph ph-megaphone"></i> Relief Notices</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Community Announcements</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">
+                        Important communication from canteen administrators and partner relief coordinators.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div id="ngo-announcements-feed" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- =======================================================
+                 NGO WORKSPACE: 8. PROFILE / SETTINGS
+                 ======================================================= -->
+            <section id="ngo-profile" class="page-section hidden">
+                <div style="margin-bottom: 1.5rem;">
+                    <span class="badge badge-warning"><i class="ph ph-user-gear"></i> Organization Profile</span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 0.35rem;">Relief Partner Profile & Settings</h2>
+                    <p class="text-secondary" style="font-size: 0.88rem;">Registered shelter credentials and verified capacity.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem;">Relief Coordinator Information</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">COORDINATOR NAME</label>
+                                <div id="ngo-profile-name" style="font-weight: 700; font-size: 1.1rem;">--</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">EMAIL</label>
+                                <div id="ngo-profile-email" style="font-weight: 600; color: var(--text-secondary);">--</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ORGANIZATION</label>
+                                <div id="ngo-profile-org" style="font-weight: 700; color: var(--warning-text);">--</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ROLE</label>
+                                <div><span class="badge badge-warning" id="ngo-profile-role">Registered NGO Partner</span></div>
+                            </div>
+                            <div style="margin-top: 0.75rem;">
+                                <button type="button" class="btn-secondary" onclick="openEditProfileModal()" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+                                    <i class="ph ph-user-circle-gear"></i> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem;">System & Preferences</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">DATABASE CONNECTION</label>
+                                <div style="font-weight: 600;">MySQL 8.0 Relationally Verified</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">RECOVERY DISPATCH ACCESS</label>
+                                <div style="font-weight: 600;">Authorized Partner Endpoint</div>
+                            </div>
+                            <div style="margin-top: 0.5rem;">
+                                <button class="btn-secondary" onclick="toggleTheme()" style="width: 100%;">
+                                    <i class="ph ph-sun"></i> Toggle Light / Dark Mode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODALS & WORKFLOW DIALOGS
+         ========================================== -->
+
+    <!-- 1. Add Inventory Modal -->
+    <div id="add-inventory-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Add New Food Item</h3>
+                <button class="modal-close-btn" onclick="closeAddInventoryModal()">&times;</button>
             </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn-outline-glass" onclick="copyDonationMessage()" style="flex: 1;"><i class="ph ph-copy"></i> Copy Message</button>
-                <button class="btn-primary" onclick="closeDonationModal()" style="flex: 1;">Close</button>
+            <form id="add-inventory-form" onsubmit="submitNewInventory(event)">
+                <div class="form-group">
+                    <label for="inv-new-name">Food Item Name</label>
+                    <input type="text" id="inv-new-name" class="form-control" placeholder="e.g. Steamed Rice" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inv-new-category">Category</label>
+                    <select id="inv-new-category" class="form-control">
+                        <option value="Cooked Meals">Cooked Meals</option>
+                        <option value="Breakfast Items">Breakfast Items</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Dry Rations">Dry Rations</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="inv-new-quantity">Quantity</label>
+                        <input type="number" id="inv-new-quantity" class="form-control" placeholder="e.g. 50" min="0.5" step="0.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-new-unit">Unit</label>
+                        <select id="inv-new-unit" class="form-control">
+                            <option value="portions">portions</option>
+                            <option value="kg">kg</option>
+                            <option value="liters">liters</option>
+                            <option value="plates">plates</option>
+                            <option value="pieces">pieces</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inv-new-expiry-days">Shelf Life / Expiry (Days)</label>
+                    <input type="number" id="inv-new-expiry-days" class="form-control" placeholder="e.g. 1 for cooked meals" min="0" required>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeAddInventoryModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Save to MySQL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Edit Inventory Modal -->
+    <div id="edit-inventory-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Edit Inventory Item</h3>
+                <button class="modal-close-btn" onclick="closeEditInventoryModal()">&times;</button>
+            </div>
+            <form id="edit-inventory-form" onsubmit="submitEditInventory(event)">
+                <input type="hidden" id="edit-inv-id">
+                
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" id="edit-inv-name" class="form-control" disabled>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="edit-inv-quantity">Quantity</label>
+                        <input type="number" id="edit-inv-quantity" class="form-control" min="0" step="0.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-inv-expiry-days">Days Until Expiry</label>
+                        <input type="number" id="edit-inv-expiry-days" class="form-control" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-inv-status">Status</label>
+                    <select id="edit-inv-status" class="form-control">
+                        <option value="AVAILABLE">AVAILABLE</option>
+                        <option value="LOW STOCK">LOW STOCK</option>
+                        <option value="EXPIRING SOON">EXPIRING SOON</option>
+                        <option value="SURPLUS">SURPLUS</option>
+                        <option value="DONATED">DONATED</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeEditInventoryModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Update Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Publish Surplus Food for Redistribution Modal (Supplier -> ALL NGOs) -->
+    <div id="publish-surplus-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="ph ph-broadcast text-success"></i> Publish Surplus for Redistribution</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Broadcasts live availability to ALL verified partner organizations.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closePublishSurplusModal()">&times;</button>
+            </div>
+
+            <form id="publish-surplus-form" onsubmit="submitPublishSurplus(event)">
+                <input type="hidden" id="pub-inv-id">
+
+                <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; background: var(--primary-light); border-color: var(--primary-border);">
+                    <div style="font-size: 0.82rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.45rem;">
+                        <i class="ph ph-info" style="color: var(--primary); font-size: 1.1rem;"></i>
+                        <span><strong>Broadcast Mode:</strong> This surplus food will be visible to <strong>ALL authenticated partner organizations</strong> simultaneously.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pub-food-item">Food Item Name</label>
+                    <input type="text" id="pub-food-item" class="form-control" placeholder="e.g. Steamed Rice, Chapati, Mixed Vegetable Curry" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="pub-quantity">Available Quantity</label>
+                        <input type="number" id="pub-quantity" class="form-control" min="0.5" step="0.5" placeholder="e.g. 25" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pub-unit">Unit</label>
+                        <select id="pub-unit" class="form-control">
+                            <option value="kg">kg</option>
+                            <option value="portions">portions</option>
+                            <option value="plates">plates</option>
+                            <option value="pieces">pieces</option>
+                            <option value="liters">liters</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pub-available-until">Available Until (Pickup Window)</label>
+                    <input type="text" id="pub-available-until" class="form-control" placeholder="e.g. 3:00 PM, Today before 4:00 PM" value="Today before 4:00 PM" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pub-pickup-location">Pickup Location</label>
+                    <input type="text" id="pub-pickup-location" class="form-control" value="Srinivas Campus Canteen Gate 2, Mangalore" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pub-notes">Freshness & Preparation Notes</label>
+                    <textarea id="pub-notes" class="form-control" rows="2" placeholder="e.g. Freshly prepared afternoon batch packed in food-grade containers."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closePublishSurplusModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1; background: var(--success); border-color: var(--success);">
+                        <i class="ph ph-broadcast"></i> Publish for Redistribution
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3B. Legacy Surplus Modal Alias for Backward Compatibility -->
+    <div id="surplus-donation-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Publish Surplus Batch</h3>
+                <button class="modal-close-btn" onclick="closeSurplusDonationModal()">&times;</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <p>Redirecting to standard Redistribution Publisher...</p>
+                <button class="btn-primary" onclick="closeSurplusDonationModal(); openPublishSurplusModal();">Open Redistribution Publisher</button>
             </div>
         </div>
     </div>
 
+    <!-- 3C. Organization Request Food Modal (NGO -> Supplier) -->
+    <div id="request-food-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 540px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="ph ph-hand-heart text-primary"></i> Request Surplus Food</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Inventory reservation will hold this quantity exclusively for your organization.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeRequestFoodModal()">&times;</button>
+            </div>
+
+            <form id="request-food-form" onsubmit="submitRequestFood(event)">
+                <input type="hidden" id="req-post-id">
+
+                <div class="card" style="padding: 0.85rem 1rem; margin-bottom: 1rem; background: var(--bg-body);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <h4 id="req-modal-food-item" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Food Item</h4>
+                        <span class="badge badge-success" id="req-modal-avail-badge">25 kg available</span>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div><i class="ph ph-storefront"></i> Supplier: <strong id="req-modal-supplier">Srinivas Institute Canteen</strong></div>
+                        <div><i class="ph ph-clock"></i> Available Until: <strong id="req-modal-deadline">3:00 PM</strong></div>
+                        <div><i class="ph ph-map-pin"></i> Pickup: <strong id="req-modal-pickup">Srinivas Canteen Gate 2</strong></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="req-modal-quantity" style="display: flex; justify-content: space-between;">
+                        <span>Requested Quantity (<span id="req-modal-unit-label">kg</span>)</span>
+                        <span style="font-size: 0.76rem; color: var(--text-muted);">Max: <strong id="req-modal-max-label">25 kg</strong></span>
+                    </label>
+                    <input type="number" id="req-modal-quantity" class="form-control" min="0.5" step="0.5" required>
+                    <small id="req-modal-validation-hint" style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">
+                        Quantity will be instantly held as RESERVED to prevent double booking.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="req-modal-pickup-time">Preferred Pickup Time</label>
+                    <input type="text" id="req-modal-pickup-time" class="form-control" placeholder="e.g. 2:00 PM, Today at 2:30 PM" value="Today 2:00 PM">
+                </div>
+
+                <div class="form-group">
+                    <label for="req-modal-message">Optional Message to Supplier</label>
+                    <textarea id="req-modal-message" class="form-control" rows="2" placeholder="e.g. For our afternoon relief kitchen shelter"></textarea>
+                </div>
+
+                <div id="req-modal-error-alert" class="card hidden" style="padding: 0.65rem 0.85rem; margin-bottom: 1rem; background: var(--danger-bg); border-color: var(--danger); color: var(--danger-text); font-size: 0.82rem;"></div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeRequestFoodModal()">Cancel</button>
+                    <button type="submit" id="req-modal-submit-btn" class="btn-primary" style="flex: 1;">
+                        <i class="ph ph-check-circle"></i> Submit Request & Reserve
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3D. Supplier Schedule Pickup Modal -->
+    <div id="schedule-pickup-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700;"><i class="ph ph-truck text-info"></i> Schedule Food Pickup</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Set pickup date and time for the partner organization.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeSchedulePickupModal()">&times;</button>
+            </div>
+
+            <form id="schedule-pickup-form" onsubmit="submitSchedulePickup(event)">
+                <input type="hidden" id="sched-request-id">
+
+                <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; background: var(--bg-body);">
+                    <div style="font-size: 0.85rem; line-height: 1.45;">
+                        <div>Organization: <strong id="sched-modal-org">ISKCON Food Relief</strong></div>
+                        <div>Food Item: <strong id="sched-modal-item">Steamed Rice (10 kg)</strong></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sched-pickup-date">Pickup Date</label>
+                    <input type="date" id="sched-pickup-date" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sched-pickup-time">Pickup Time</label>
+                    <input type="text" id="sched-pickup-time" class="form-control" placeholder="e.g. 2:00 PM" value="2:00 PM" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sched-pickup-location">Pickup Location</label>
+                    <input type="text" id="sched-pickup-location" class="form-control" value="Srinivas Campus Canteen Gate 2, Mangalore" required>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeSchedulePickupModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1; background: var(--info); border-color: var(--info);">
+                        <i class="ph ph-calendar-check"></i> Confirm Pickup Schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. View Donation Details Modal -->
+    <div id="view-donation-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 540px;">
+            <div class="modal-header">
+                <h3 id="view-don-title" style="font-size: 1.15rem; font-weight: 700;">Donation Dispatch Details</h3>
+                <button class="modal-close-btn" onclick="closeViewDonationModal()">&times;</button>
+            </div>
+            <div id="view-don-content" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary);">
+                <!-- Populated dynamically -->
+            </div>
+            <div style="margin-top: 1.25rem; text-align: right;">
+                <button class="btn-primary" onclick="closeViewDonationModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Edit User Profile</h3>
+                <button class="modal-close-btn" onclick="closeEditProfileModal()">&times;</button>
+            </div>
+            <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)">
+                <div class="form-group">
+                    <label for="edit-profile-name" style="font-size: 0.82rem; font-weight: 600;">Full Name</label>
+                    <input type="text" id="edit-profile-name" class="form-control" required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.82rem; font-weight: 600;">Email Address (Account Identifier)</label>
+                    <input type="email" id="edit-profile-email" class="form-control" disabled style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.82rem; font-weight: 600;">Account Role</label>
+                    <input type="text" id="edit-profile-role" class="form-control" disabled style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.82rem; font-weight: 600;">Organization</label>
+                    <input type="text" id="edit-profile-org" class="form-control" disabled style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+                <div id="edit-profile-alert" class="hidden" style="margin-bottom: 1rem; padding: 0.65rem 0.85rem; border-radius: 4px; font-size: 0.82rem;"></div>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeEditProfileModal()">Cancel</button>
+                    <button type="submit" id="edit-profile-save-btn" class="btn-primary" style="flex: 1;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Application Script -->
     <script src="app.js"></script>
 </body>
 </html>

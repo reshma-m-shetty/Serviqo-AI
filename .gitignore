@@ -1,0 +1,39 @@
+# Environment configuration & secrets
+.env
+.env.*
+!.env.example
+
+# Certificates & SSL keys
+*.pem
+*.crt
+*.ca
+*.key
+
+# Database backups & local database files
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Python bytecode & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Quarantine folder for retired files
+quarantine/
