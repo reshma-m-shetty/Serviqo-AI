@@ -133,3 +133,7 @@ python tests/test_phase2_verification.py
 * **Zero-Leakage Tenancy:** Scoped queries ensure NGOs can never view or modify another organization's donation dispatches.
 * **Parametrized SQL Queries:** 100% protection against SQL injection vulnerabilities across all database operations.
 * **Strict Transport Security:** Native SSL/TLS support for secure connections to cloud-hosted databases.
+=======
+# Serviqo-AI
+A food demand prediction model and connects the surplus food to the NGO and needed people without wasting of food
+
