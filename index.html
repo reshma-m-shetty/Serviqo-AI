@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serviqo AI | Intelligent Canteen Management & Food Recovery Platform</title>
-    <meta name="description" content="Srinivas Institute Canteen operations, real-time demand prediction, smart inventory management and registered NGO surplus food recovery.">
+    <title>Serviqo AI | Smarter Food Systems for a Better Tomorrow</title>
+    <meta name="description" content="AI-powered platform to predict demand, prevent food waste and share surplus with communities.">
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -30,11 +30,14 @@
 
     <!-- Mobile Top Navigation Bar -->
     <div class="mobile-top-bar">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div class="brand-icon" style="width: 32px; height: 32px; font-size: 1.15rem;">
-                <i class="ph ph-plant"></i>
-            </div>
-            <strong style="font-size: 1.05rem; color: var(--text-primary); font-weight: 700;">Serviqo <span style="color: var(--primary);">AI</span></strong>
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <span class="brand-mark small" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <path d="M29.7 5.8C19.1 7.1 11.4 13.2 10.1 23.5c-.9 7.3 2.9 13.8 9.5 17.1 1.1.6 2.3-.3 2.1-1.5-.5-3.4-.1-7.4 2-11.2 2.2-4.1 6-7.1 10.6-9.2 1.2-.5 1.3-2.2.2-2.9-2.2-1.5-4.4-2.6-4.8-5.8Z" fill="currentColor"/>
+                    <path d="M34.2 13.2c-5.4 1.1-10.2 4.6-13 9.3-2.5 4.2-3.4 8.7-2.8 13.2" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <strong style="font-size: 1.1rem; color: var(--text-primary); font-weight: 800; font-family: var(--font-heading);">Serviqo <span style="color: var(--primary);">AI</span></strong>
         </div>
         <button id="mobile-menu-btn" class="icon-btn" aria-label="Toggle navigation menu">
             <i class="ph ph-list"></i>
@@ -48,9 +51,12 @@
              ========================================== -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="brand-icon">
-                    <i class="ph ph-plant"></i>
-                </div>
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none">
+                        <path d="M29.7 5.8C19.1 7.1 11.4 13.2 10.1 23.5c-.9 7.3 2.9 13.8 9.5 17.1 1.1.6 2.3-.3 2.1-1.5-.5-3.4-.1-7.4 2-11.2 2.2-4.1 6-7.1 10.6-9.2 1.2-.5 1.3-2.2.2-2.9-2.2-1.5-4.4-2.6-4.8-5.8Z" fill="currentColor"/>
+                        <path d="M34.2 13.2c-5.4 1.1-10.2 4.6-13 9.3-2.5 4.2-3.4 8.7-2.8 13.2" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+                    </svg>
+                </span>
                 <div class="brand-text">
                     <h2>Serviqo <span>AI</span></h2>
                     <p id="sidebar-sub-brand">Srinivas Canteen</p>
@@ -127,7 +133,7 @@
 
             <div class="sidebar-footer">
                 <button class="btn-secondary btn-full" onclick="toggleTheme()" style="justify-content: flex-start; padding: 0.5rem 0.75rem; font-size: 0.8rem;">
-                    <span id="themeIcon">☀️</span> <span>Switch Theme</span>
+                    <span id="themeIcon">🌙</span> <span class="theme-btn-text">Switch to Dark Mode</span>
                 </button>
                 <button class="btn-secondary btn-full" onclick="handleLogout()" style="justify-content: flex-start; padding: 0.5rem 0.75rem; font-size: 0.8rem; color: var(--danger-text);">
                     <i class="ph ph-sign-out"></i> <span>Sign Out</span>
@@ -145,6 +151,18 @@
             </div>
 
             <div class="header-actions">
+                <!-- Live Date Badge -->
+                <div class="role-badge-pill" id="today-date-pill" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span id="today-date-badge">Today</span>
+                </div>
+
+                <!-- Organization Pill -->
+                <div id="header-organization-pill" class="role-badge-pill hidden" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-buildings"></i>
+                    <span id="header-org-name">Srinivas Canteen</span>
+                </div>
+
                 <!-- Role Badge Indicator -->
                 <div id="header-role-badge" class="role-badge-pill">
                     <i class="ph ph-storefront"></i>
@@ -216,136 +234,311 @@
         <main class="main-content">
 
             <!-- ==========================================
-                 AUTHENTICATION VIEW (PURE DB-BACKED)
+                 AUTHENTICATION & LANDING VIEW
                  ========================================== -->
             <section id="login" class="page-section hidden">
-                <div class="onboarding-container" style="max-width: 520px; margin: 2rem auto;">
-                    <div class="card" style="padding: 2.25rem;">
-                        <div class="text-center" style="margin-bottom: 1.5rem;">
-                            <div class="brand-icon" style="margin: 0 auto 0.75rem; width: 48px; height: 48px; font-size: 1.6rem;">
-                                <i class="ph ph-plant"></i>
+                <div class="landing-shell" id="landingShell">
+                    <!-- =========================
+                         PAGE 1 — WELCOME LANDING
+                    ========================== -->
+                    <div id="welcomeView" class="welcome-page" aria-labelledby="welcomeTitle">
+                        <div class="hero-bg" aria-hidden="true"></div>
+                        <div class="hero-overlay" aria-hidden="true"></div>
+
+                        <header class="topbar">
+                            <a class="brand" href="#welcome" aria-label="Serviqo AI home">
+                                <span class="brand-mark" aria-hidden="true">
+                                    <svg viewBox="0 0 48 48" fill="none">
+                                        <path d="M29.7 5.8C19.1 7.1 11.4 13.2 10.1 23.5c-.9 7.3 2.9 13.8 9.5 17.1 1.1.6 2.3-.3 2.1-1.5-.5-3.4-.1-7.4 2-11.2 2.2-4.1 6-7.1 10.6-9.2 1.2-.5 1.3-2.2.2-2.9-2.2-1.5-4.4-2.6-4.8-5.8Z" fill="currentColor"/>
+                                        <path d="M34.2 13.2c-5.4 1.1-10.2 4.6-13 9.3-2.5 4.2-3.4 8.7-2.8 13.2" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                                <span>Serviqo <em>AI</em></span>
+                            </a>
+
+                            <button class="top-login" id="topLoginBtn" type="button">Login</button>
+                        </header>
+
+                        <section class="welcome-content">
+                            <div class="hero-copy">
+                                <div class="eyebrow">AI-POWERED FOOD INTELLIGENCE</div>
+
+                                <h1 id="welcomeTitle">
+                                    Smarter Food Systems
+                                    <span>for a Better Tomorrow</span>
+                                </h1>
+
+                                <p class="hero-subtitle">
+                                    AI-powered platform to predict demand, prevent food waste
+                                    and share surplus with communities.
+                                </p>
+
+                                <div class="hero-actions">
+                                    <button class="primary-btn" id="getStartedBtn" type="button">
+                                        <span>Get Started</span>
+                                        <span class="arrow">→</span>
+                                    </button>
+                                    <button class="secondary-btn" id="learnBtn" type="button">
+                                        Explore Features
+                                    </button>
+                                </div>
+
+                                <div class="feature-grid" id="features">
+                                    <article class="feature-card">
+                                        <div class="feature-icon">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M4 19V10M10 19V5M16 19v-8M22 19V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                <path d="M3 19h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            </svg>
+                                        </div>
+                                        <h2>Predict Food Demand</h2>
+                                        <p>Plan smarter with AI-assisted demand insights.</p>
+                                    </article>
+
+                                    <article class="feature-card">
+                                        <div class="feature-icon">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M20.5 4.2C14.7 3.7 8.5 5.5 5.2 10c-2.2 3-1.8 6.9 1.2 9.1 2.7 2 6.3 1.6 8.7-.7 2.9-2.8 4.3-7.6 5.4-14.2Z" fill="currentColor"/>
+                                                <path d="M5.5 19.5c2.4-4.2 6-7.5 10.5-9.8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                                            </svg>
+                                        </div>
+                                        <h2>Reduce Food Waste</h2>
+                                        <p>Turn better predictions into less unnecessary waste.</p>
+                                    </article>
+
+                                    <article class="feature-card">
+                                        <div class="feature-icon">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="2"/>
+                                                <circle cx="17" cy="9" r="2.4" stroke="currentColor" stroke-width="2"/>
+                                                <path d="M3.5 19c.5-3.3 2.5-5 5.5-5s5 1.7 5.5 5M14 14.8c2.8-.5 5.5 1.1 6.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            </svg>
+                                        </div>
+                                        <h2>Share with Communities</h2>
+                                        <p>Connect surplus food with people and organizations.</p>
+                                    </article>
+                                </div>
+
+                                <div class="promise">
+                                    <span class="promise-leaf">✦</span>
+                                    <span>Good Food</span>
+                                    <b>•</b>
+                                    <span>Less Waste</span>
+                                    <b>•</b>
+                                    <span>Brighter Tomorrow</span>
+                                </div>
                             </div>
-                            <h2 id="auth-title" style="font-size: 1.55rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
-                                Sign in to Serviqo AI
-                            </h2>
-                            <p id="auth-subtitle" class="text-secondary" style="font-size: 0.86rem;">
-                                Access your personalized canteen or NGO workspace.
+
+                            <div class="hero-visual" aria-hidden="true">
+                                <div class="visual-glow"></div>
+                                <div class="image-frame"></div>
+                                <div class="floating-stat stat-one">
+                                    <span class="mini-icon">↗</span>
+                                    <div><strong>AI Insights</strong><small>Smarter planning</small></div>
+                                </div>
+                                <div class="floating-stat stat-two">
+                                    <span class="mini-icon">✓</span>
+                                    <div><strong>Waste Reduced</strong><small>Better every day</small></div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- =========================
+                         PAGE 2 — LOGIN / REGISTER
+                    ========================== -->
+                    <div id="loginView" class="login-page">
+                        <div class="login-bg" aria-hidden="true"></div>
+                        <div class="login-overlay" aria-hidden="true"></div>
+
+                        <button class="back-btn" id="backBtn" type="button" aria-label="Go back to welcome page">
+                            <span>←</span> Back
+                        </button>
+
+                        <div class="login-card">
+                            <span class="leaf leaf-a" aria-hidden="true">❧</span>
+                            <span class="leaf leaf-b" aria-hidden="true">❧</span>
+                            <span class="leaf leaf-c" aria-hidden="true">❧</span>
+
+                            <div class="login-brand">
+                                <span class="brand-mark small" aria-hidden="true">
+                                    <svg viewBox="0 0 48 48" fill="none">
+                                        <path d="M29.7 5.8C19.1 7.1 11.4 13.2 10.1 23.5c-.9 7.3 2.9 13.8 9.5 17.1 1.1.6 2.3-.3 2.1-1.5-.5-3.4-.1-7.4 2-11.2 2.2-4.1 6-7.1 10.6-9.2 1.2-.5 1.3-2.2.2-2.9-2.2-1.5-4.4-2.6-4.8-5.8Z" fill="currentColor"/>
+                                        <path d="M34.2 13.2c-5.4 1.1-10.2 4.6-13 9.3-2.5 4.2-3.4 8.7-2.8 13.2" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                                <span>Serviqo <em>AI</em></span>
+                            </div>
+
+                            <div class="login-heading">
+                                <h2 id="auth-title">Welcome Back!</h2>
+                                <p id="auth-subtitle">Login to continue your Serviqo AI journey</p>
+                            </div>
+
+                            <!-- Auth Mode Switcher -->
+                            <div class="auth-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                                <button type="button" class="auth-tab-btn active" id="auth-mode-signin" onclick="setAuthMode('signin')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 700; border-bottom: 2px solid var(--primary); color: var(--primary); cursor: pointer;">
+                                    Sign In
+                                </button>
+                                <button type="button" class="auth-tab-btn" id="auth-mode-register" onclick="setAuthMode('register')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 600; color: var(--text-muted); cursor: pointer;">
+                                    Create Account
+                                </button>
+                            </div>
+
+                            <!-- User-facing Alert / Error message container -->
+                            <div id="auth-alert-box" class="hidden" style="margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;"></div>
+
+                            <!-- 1. SIGN IN FORM -->
+                            <form id="signin-form" onsubmit="handleLoginSubmit(event)">
+                                <label class="input-wrap">
+                                    <span class="input-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                            <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8"/>
+                                        </svg>
+                                    </span>
+                                    <input type="email" id="auth-email" placeholder="Email or Username" required autocomplete="email">
+                                </label>
+
+                                <label class="input-wrap">
+                                    <span class="input-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                            <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/>
+                                        </svg>
+                                    </span>
+                                    <input type="password" id="auth-password" placeholder="Password" required autocomplete="current-password">
+                                    <button class="eye-btn" id="togglePasswordBtn" type="button" onclick="togglePasswordVisibility('auth-password', this)" aria-label="Show password">
+                                        <i class="ph ph-eye"></i>
+                                    </button>
+                                </label>
+
+                                <div class="form-options">
+                                    <label class="remember">
+                                        <input id="remember" type="checkbox" checked />
+                                        <span class="custom-check">✓</span>
+                                        <span>Remember me</span>
+                                    </label>
+                                    <button class="text-btn" id="forgotBtn" type="button">Forgot password?</button>
+                                </div>
+
+                                <button type="submit" id="auth-signin-btn" class="primary-btn btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem;">
+                                    <span>Login to Portal</span>
+                                    <span class="arrow">→</span>
+                                </button>
+                            </form>
+
+                            <!-- 2. CREATE ACCOUNT FORM -->
+                            <form id="register-form" class="hidden" onsubmit="handleRegisterSubmit(event)">
+                                <div class="form-group">
+                                    <label for="reg-name" style="font-size: 0.82rem; font-weight: 600;">Full Name</label>
+                                    <input type="text" id="reg-name" class="form-control" placeholder="e.g. Ramesh Kumar" required minlength="2">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reg-email" style="font-size: 0.82rem; font-weight: 600;">Email Address</label>
+                                    <input type="email" id="reg-email" class="form-control" placeholder="user@organization.org" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reg-password" style="font-size: 0.82rem; font-weight: 600;">Password (min 4 characters)</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" id="reg-password" class="form-control" placeholder="Create password" required minlength="4">
+                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Show/Hide Password">
+                                            <i class="ph ph-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reg-confirm-password" style="font-size: 0.82rem; font-weight: 600;">Confirm Password</label>
+                                    <div class="password-input-wrapper">
+                                        <input type="password" id="reg-confirm-password" class="form-control" placeholder="Re-enter password" required minlength="4">
+                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" title="Show/Hide Password">
+                                            <i class="ph ph-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reg-role" style="font-size: 0.82rem; font-weight: 600;">Select Organization Type</label>
+                                    <select id="reg-role" class="form-control" onchange="onRegisterRoleChange()">
+                                        <option value="Kitchen Staff">Kitchen Staff / Canteen (Srinivas Institute)</option>
+                                        <option value="NGO">NGO / Relief Partner (Food Recovery)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="reg-org-group">
+                                    <label for="reg-org" style="font-size: 0.82rem; font-weight: 600;" id="reg-org-label">Organization Name</label>
+                                    <input type="text" id="reg-org" class="form-control" value="Srinivas Institute Canteen">
+                                </div>
+
+                                <!-- Additional NGO Profile Fields (Active when role is NGO) -->
+                                <div id="reg-ngo-details" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.5rem; background: rgba(0,0,0,0.25); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #7fdc9b; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <i class="ph ph-identification-card"></i> Relief Partner Profile
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="reg-phone" style="font-size: 0.8rem; font-weight: 600;">Contact Phone Number</label>
+                                        <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98450 12345">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label for="reg-address" style="font-size: 0.8rem; font-weight: 600;">Physical Address / Location</label>
+                                        <input type="text" id="reg-address" class="form-control" placeholder="e.g. Kodialbail, Mangalore, Karnataka">
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label for="reg-capacity" style="font-size: 0.8rem; font-weight: 600;">Daily Capacity</label>
+                                            <input type="number" id="reg-capacity" class="form-control" placeholder="150" min="10" value="150">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label for="reg-need-level" style="font-size: 0.8rem; font-weight: 600;">Need Urgency</label>
+                                            <select id="reg-need-level" class="form-control">
+                                                <option value="high">High Need</option>
+                                                <option value="medium" selected>Medium Need</option>
+                                                <option value="low">Low Need</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="auth-register-btn" class="primary-btn btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">
+                                    <span>Create Account</span>
+                                    <span class="arrow">→</span>
+                                </button>
+                            </form>
+
+                            <div class="divider"><span>or continue with</span></div>
+
+                            <div class="social-row">
+                                <button class="social-btn" type="button" data-provider="Google" aria-label="Continue with Google">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="#4285F4" d="M21.35 12.2c0-.7-.06-1.38-.18-2.03H12v3.84h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.7 2.91-4.2 2.91-7.2Z"/>
+                                        <path fill="#34A853" d="M12 21.5c2.63 0 4.84-.87 6.45-2.35l-3.14-2.45c-.87.58-1.98.92-3.31.92-2.55 0-4.71-1.72-5.49-4.03H3.27v2.53A9.75 9.75 0 0 0 12 21.5Z"/>
+                                        <path fill="#FBBC05" d="M6.51 13.59A5.86 5.86 0 0 1 6.2 12c0-.55.11-1.08.31-1.59V7.88H3.27A9.5 9.5 0 0 0 2.25 12c0 1.53.37 2.98 1.02 4.12l3.24-2.53Z"/>
+                                        <path fill="#EA4335" d="M12 6.38c1.43 0 2.71.49 3.72 1.46l2.79-2.79C16.84 3.47 14.63 2.5 12 2.5a9.75 9.75 0 0 0-8.73 5.38l3.24 2.53C7.29 8.1 9.45 6.38 12 6.38Z"/>
+                                    </svg>
+                                </button>
+
+                                <button class="social-btn" type="button" data-provider="Microsoft" aria-label="Continue with Microsoft">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path fill="#f25022" d="M2 2h9.5v9.5H2z"/><path fill="#7fba00" d="M12.5 2H22v9.5h-9.5z"/>
+                                        <path fill="#00a4ef" d="M2 12.5h9.5V22H2z"/><path fill="#ffb900" d="M12.5 12.5H22V22h-9.5z"/>
+                                    </svg>
+                                </button>
+
+                                <button class="social-btn" type="button" data-provider="GitHub" aria-label="Continue with GitHub">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M12 .7a11.3 11.3 0 0 0-3.57 22.02c.57.1.78-.25.78-.55v-2.1c-3.18.69-3.85-1.35-3.85-1.35-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.54-.29-5.21-1.27-5.21-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.13 1.17a10.86 10.86 0 0 1 5.7 0c2.17-1.48 3.13-1.17 3.13-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.4-2.68 5.36-5.23 5.65.41.35.77 1.04.77 2.1v3.11c0 .3.21.66.79.55A11.3 11.3 0 0 0 12 .7Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <p class="signup-text" id="authSwitchPrompt">
+                                Don't have an account?
+                                <button class="text-btn signup-btn" id="signupBtn" type="button" onclick="setAuthMode('register')">Sign Up</button>
                             </p>
                         </div>
-
-                        <!-- Auth Mode Switcher -->
-                        <div class="auth-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-                            <button type="button" class="auth-tab-btn active" id="auth-mode-signin" onclick="setAuthMode('signin')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 700; border-bottom: 2px solid var(--primary); color: var(--primary); cursor: pointer;">
-                                Sign In
-                            </button>
-                            <button type="button" class="auth-tab-btn" id="auth-mode-register" onclick="setAuthMode('register')" style="flex: 1; padding: 0.5rem; background: none; border: none; font-weight: 600; color: var(--text-muted); cursor: pointer;">
-                                Create Account
-                            </button>
-                        </div>
-
-                        <!-- User-facing Alert / Error message container -->
-                        <div id="auth-alert-box" class="hidden" style="margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;"></div>
-
-                        <!-- 1. SIGN IN FORM -->
-                        <form id="signin-form" onsubmit="handleLoginSubmit(event)">
-                            <div class="form-group">
-                                <label for="auth-email" style="font-size: 0.82rem; font-weight: 600;">Email Address</label>
-                                <input type="email" id="auth-email" class="form-control" placeholder="user@serviqo.ai" required autocomplete="email">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="auth-password" style="font-size: 0.82rem; font-weight: 600;">Password</label>
-                                <div class="password-input-wrapper">
-                                    <input type="password" id="auth-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
-                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('auth-password', this)" title="Show/Hide Password">
-                                        <i class="ph ph-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="auth-signin-btn" class="btn-primary btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem;">
-                                Sign In to Portal →
-                            </button>
-                        </form>
-
-                        <!-- 2. CREATE ACCOUNT FORM -->
-                        <form id="register-form" class="hidden" onsubmit="handleRegisterSubmit(event)">
-                            <div class="form-group">
-                                <label for="reg-name" style="font-size: 0.82rem; font-weight: 600;">Full Name</label>
-                                <input type="text" id="reg-name" class="form-control" placeholder="e.g. Ramesh Kumar" required minlength="2">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reg-email" style="font-size: 0.82rem; font-weight: 600;">Email Address</label>
-                                <input type="email" id="reg-email" class="form-control" placeholder="user@organization.org" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reg-password" style="font-size: 0.82rem; font-weight: 600;">Password (min 4 characters)</label>
-                                <div class="password-input-wrapper">
-                                    <input type="password" id="reg-password" class="form-control" placeholder="Create password" required minlength="4">
-                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Show/Hide Password">
-                                        <i class="ph ph-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reg-confirm-password" style="font-size: 0.82rem; font-weight: 600;">Confirm Password</label>
-                                <div class="password-input-wrapper">
-                                    <input type="password" id="reg-confirm-password" class="form-control" placeholder="Re-enter password" required minlength="4">
-                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg-confirm-password', this)" title="Show/Hide Password">
-                                        <i class="ph ph-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reg-role" style="font-size: 0.82rem; font-weight: 600;">Select Organization Type</label>
-                                <select id="reg-role" class="form-control" onchange="onRegisterRoleChange()">
-                                    <option value="Kitchen Staff">Kitchen Staff / Canteen (Srinivas Institute)</option>
-                                    <option value="NGO">NGO / Relief Partner (Food Recovery)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group" id="reg-org-group">
-                                <label for="reg-org" style="font-size: 0.82rem; font-weight: 600;" id="reg-org-label">Organization Name</label>
-                                <input type="text" id="reg-org" class="form-control" value="Srinivas Institute Canteen">
-                            </div>
-
-                            <!-- Additional NGO Profile Fields (Active when role is NGO) -->
-                            <div id="reg-ngo-details" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.5rem; background: var(--bg-surface-secondary, #f8fafc); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                                <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">
-                                    <i class="ph ph-identification-card"></i> Relief Partner Profile
-                                </div>
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label for="reg-phone" style="font-size: 0.8rem; font-weight: 600;">Contact Phone Number</label>
-                                    <input type="tel" id="reg-phone" class="form-control" placeholder="+91 98450 12345">
-                                </div>
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label for="reg-address" style="font-size: 0.8rem; font-weight: 600;">Physical Address / Location</label>
-                                    <input type="text" id="reg-address" class="form-control" placeholder="e.g. Kodialbail, Mangalore, Karnataka">
-                                </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label for="reg-capacity" style="font-size: 0.8rem; font-weight: 600;">Daily Capacity</label>
-                                        <input type="number" id="reg-capacity" class="form-control" placeholder="150" min="10" value="150">
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label for="reg-need-level" style="font-size: 0.8rem; font-weight: 600;">Need Urgency</label>
-                                        <select id="reg-need-level" class="form-control">
-                                            <option value="high">High Need</option>
-                                            <option value="medium" selected>Medium Need</option>
-                                            <option value="low">Low Need</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="auth-register-btn" class="btn-primary btn-full" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700; margin-top: 0.5rem; background: var(--success); border-color: var(--success);">
-                                Create Account →
-                            </button>
-                        </form>
                     </div>
                 </div>
             </section>
@@ -606,26 +799,25 @@
                                 </div>
                             </div>
 
-                            <!-- Section 4: Historical Demand Baseline -->
-                            <div class="form-section-title">Historical Consumption Baseline</div>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
-                                <div class="form-group">
-                                    <label for="demand-previous">Previous Day Demand</label>
-                                    <input type="number" id="demand-previous" class="form-control" placeholder="e.g. 140">
-                                </div>
-                                <div class="form-group">
-                                    <label for="demand-avg-7day">7-Day Rolling Avg</label>
-                                    <input type="number" id="demand-avg-7day" class="form-control" placeholder="e.g. 145">
-                                </div>
-                                <div class="form-group">
-                                    <label for="demand-popularity">Menu Popularity</label>
+                            <!-- Section 4: Operational Settings & Automated History -->
+                            <div class="form-section-title">Operational Settings &amp; Automated History</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; align-items: center;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="demand-popularity">Menu Item Popularity</label>
                                     <select id="demand-popularity" class="form-control">
-                                        <option value="3">High Popularity</option>
-                                        <option value="2" selected>Medium Popularity</option>
-                                        <option value="1">Low Popularity</option>
+                                        <option value="3">High Popularity (+5% buffer)</option>
+                                        <option value="2" selected>Medium Popularity (Nominal)</option>
+                                        <option value="1">Low Popularity (-5% buffer)</option>
                                     </select>
                                 </div>
+                                <div style="background: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                    <div style="display: flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 700; margin-bottom: 2px;">
+                                        <i class="ph ph-database"></i> Automated History
+                                    </div>
+                                    <span>7-Day Lag &amp; 7-Day Rolling Mean derived automatically from verified database records.</span>
+                                </div>
                             </div>
+
 
                             <button type="submit" class="btn-primary btn-full" style="margin-top: 1rem; padding: 0.75rem;">
                                 <i class="ph ph-sparkle"></i> Generate ML Demand Prediction
@@ -653,15 +845,16 @@
 
                         <div id="forecast-result-state" class="hidden">
                             <div style="background: var(--primary-light); border: 1px solid var(--primary-border); padding: 1.25rem; border-radius: var(--radius-sm); text-align: center; margin-bottom: 1.25rem;">
-                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">PREDICTED FOOD DEMAND</span>
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">PREDICTED BASE DEMAND</span>
                                 <h2 id="forecast-total-demand" style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin: 4px 0;">-- Servings</h2>
-                                <span id="forecast-buffer-text" style="font-size: 0.8rem; color: var(--text-secondary);">Includes +6% safety buffer</span>
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">Expected cafeteria consumption</span>
                             </div>
 
                             <div style="background: var(--bg-body); border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recommended Preparation</span>
                                     <h4 id="forecast-prep-text" style="font-size: 1.2rem; font-weight: 800; color: var(--success-text); margin-top: 2px;">-- Servings</h4>
+                                    <span id="forecast-buffer-text" style="font-size: 0.78rem; color: var(--success-text); display: block; margin-top: 2px;">Includes safety prep buffer</span>
                                 </div>
                                 <span class="badge badge-success" id="forecast-model-badge">LightGBM Production Model</span>
                             </div>
@@ -1080,39 +1273,40 @@
                     <div class="card-header-clean">
                         <div class="card-title-group">
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                                <span class="badge badge-primary"><i class="ph ph-cpu"></i> XGBoost Regressor</span>
-                                <span class="badge badge-success"><i class="ph ph-check-circle"></i> Production Dual-Target</span>
-                                <span class="badge badge-info" id="ml-metric-samples-badge"><i class="ph ph-database"></i> 4,820 Records</span>
+                                <span class="badge badge-primary"><i class="ph ph-cpu"></i> LightGBM Dual-Model</span>
+                                <span class="badge badge-success"><i class="ph ph-check-circle"></i> Production Artifact (canteen_model.joblib)</span>
+                                <span class="badge badge-info" id="ml-metric-samples-badge"><i class="ph ph-sliders"></i> 19 Features</span>
                             </div>
-                            <h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem;">AI Kitchen Demand & Preparation Model Performance</h3>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem;">AI Kitchen Demand &amp; Preparation Model Architecture</h3>
                             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
-                                Gradient boosted trees optimized for Srinivas Canteen lunch shifts across 14 multidimensional meteorological and academic calendar features.
+                                Authoritative gradient boosted dual estimators providing expected portion demand and safe prep buffer across 19 meteorological, calendar, and automated lag features.
                             </p>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-top: 1rem;">
                         <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Mean Absolute Error (MAE)</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-mae">7.42 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span></div>
-                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-arrow-down-right"></i> High Precision (±7 plates/shift)</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Target Estimator 1</div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);" id="ml-metric-mae">LGBMRegressor</div>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.25rem;"><i class="ph ph-trend-up"></i> Expected Servings (Point Demand)</div>
                         </div>
                         <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Mean Absolute Pct Error (MAPE)</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-mape">4.86%</div>
-                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-check"></i> Below 5% Industry Threshold</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Target Estimator 2</div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--success-text);" id="ml-metric-mape">Quantile (α=0.85)</div>
+                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-shield-check"></i> Recommended Safe Prep Buffer</div>
                         </div>
                         <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">R² Variance Fit</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-r2">0.9168</div>
-                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-sparkle"></i> 91.7% Variance Explained</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Feature Pipeline</div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-r2">19 Features</div>
+                            <div style="font-size: 0.78rem; color: var(--info-text); margin-top: 0.25rem;"><i class="ph ph-database"></i> Automated 7D Lag &amp; Rolling Mean</div>
                         </div>
                         <div style="background: var(--bg-surface-secondary, #f8fafc); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Root Mean Squared Error (RMSE)</div>
-                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);" id="ml-metric-rmse">9.18 <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span></div>
-                            <div style="font-size: 0.78rem; color: var(--info-text); margin-top: 0.25rem;"><i class="ph ph-chart-bar"></i> Low Outlier Sensitivity</div>
+                            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem;">Production Status</div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--success-text);" id="ml-metric-rmse">ACTIVE</div>
+                            <div style="font-size: 0.78rem; color: var(--success-text); margin-top: 0.25rem;"><i class="ph ph-check-circle"></i> Zero Heuristics / Pure LightGBM</div>
                         </div>
                     </div>
                 </div>
+
             </section>
 
 
@@ -1140,10 +1334,10 @@
                             <div class="form-group">
                                 <label for="canteen-ann-recipient" style="font-size: 0.82rem; font-weight: 600;">Recipient Group</label>
                                 <select id="canteen-ann-recipient" class="form-control">
-                                    <option value="All Staff">All Staff</option>
-                                    <option value="Kitchen Staff">Kitchen Staff & Chefs</option>
-                                    <option value="Canteen Counter Staff">Canteen Counter Staff</option>
-                                    <option value="Relief Transport">Food Recovery Volunteers</option>
+                                    <option value="Food Recovery Volunteers">Food Recovery Volunteers & NGOs (Community)</option>
+                                    <option value="Kitchen Staff">Kitchen Staff & Chefs (Internal)</option>
+                                    <option value="Canteen Counter Staff">Canteen Counter Staff (Internal)</option>
+                                    <option value="All Staff">All Canteen Staff (Internal)</option>
                                 </select>
                             </div>
 
@@ -1237,7 +1431,7 @@
                             </div>
                             <div style="margin-top: 0.5rem;">
                                 <button class="btn-secondary" onclick="toggleTheme()" style="width: 100%;">
-                                    <i class="ph ph-sun"></i> Toggle Light / Dark Mode
+                                    <i class="ph ph-sun"></i> <span class="theme-btn-text">Switch to Dark Mode</span>
                                 </button>
                             </div>
                         </div>
@@ -1741,7 +1935,7 @@
                             </div>
                             <div style="margin-top: 0.5rem;">
                                 <button class="btn-secondary" onclick="toggleTheme()" style="width: 100%;">
-                                    <i class="ph ph-sun"></i> Toggle Light / Dark Mode
+                                    <i class="ph ph-sun"></i> <span class="theme-btn-text">Switch to Dark Mode</span>
                                 </button>
                             </div>
                         </div>

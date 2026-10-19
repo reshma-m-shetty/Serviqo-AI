@@ -9,6 +9,7 @@ import json
 import math
 import queue
 import threading
+import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 import pymysql
@@ -80,7 +81,16 @@ class MySQLPool:
         ssl_cfg = _get_ssl_config()
         if ssl_cfg:
             kwargs["ssl"] = ssl_cfg
-        return pymysql.connect(**kwargs)
+
+        for attempt in range(3):
+            try:
+                return pymysql.connect(**kwargs)
+            except (pymysql.err.OperationalError, ConnectionResetError) as e:
+                if attempt < 2 and any(code in str(e) for code in ("2013", "2006", "10054")):
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                raise
+
 
     def get_connection(self):
         conn = None
@@ -101,8 +111,9 @@ class MySQLPool:
 
         # Validate borrowed connection health; recreate if closed/stale
         try:
-            conn.ping(reconnect=True)
+            conn.ping()
             return conn
+
         except Exception:
             try:
                 conn.close()
@@ -476,7 +487,6 @@ def init_db():
     # Align existing records to Srinivas Institute Canteen (safe idempotent alignment)
     try:
         cursor.execute("UPDATE users SET organization = 'Srinivas Institute Canteen' WHERE role IN ('Kitchen Staff', 'Supplier', 'Staff') AND (organization IS NULL OR organization = '')")
-        cursor.execute("UPDATE users SET organization = 'ISKCON Food Relief Foundation - Mangalore', ngo_id = 1 WHERE email = 'ngo@serviqo.ai'")
         cursor.execute("UPDATE inventory SET supplier_name = 'Srinivas Institute Canteen' WHERE supplier_name LIKE '%Central Campus%'")
         cursor.execute("UPDATE donations SET supplier_name = 'Srinivas Institute Canteen' WHERE supplier_name LIKE '%Central Campus%'")
         cursor.execute("UPDATE suppliers SET name = 'Srinivas Institute Canteen / Kitchen', address = 'Srinivas Campus, Valachil, Mangalore', manager = 'Chef Venkatesh Rao', email = 'canteen@srinivasgroup.edu' WHERE id = 1")
@@ -509,97 +519,6 @@ def setup_admin_user(email: str, password: str, name: str = "Admin Manager", org
             """, (name, email.strip().lower(), pwd_hash, organization))
             conn.commit()
             return {"status": "created", "id": cursor.lastrowid, "email": email}
-
-
-def seed_demo_data(force: bool = False) -> bool:
-    """
-    Explicitly seeds realistic development/demo data into MySQL.
-    NEVER runs automatically on production startup or deployment.
-    Must be called deliberately.
-    """
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) as cnt FROM ngos")
-        count = cursor.fetchone()["cnt"]
-        if count > 0 and not force:
-            print("[MySQL Seeder] Database already contains records. Skipping demo seed to preserve existing records.")
-            return False
-
-        today = datetime.now().date()
-
-        # Seed Default Users
-        staff_pwd = hash_password("staff123")
-        ngo_pwd = hash_password("ngo123")
-        cursor.execute("""
-            INSERT IGNORE INTO users (name, email, password_hash, role, organization, ngo_id) VALUES
-            ('Rohan Sharma', 'kitchen@serviqo.ai', %s, 'Kitchen Staff', 'Srinivas Institute Canteen', NULL),
-            ('Anita Desai', 'ngo@serviqo.ai', %s, 'NGO', 'ISKCON Food Relief Foundation - Mangalore', 1)
-        """, (staff_pwd, ngo_pwd))
-
-        # Seed Verified NGOs
-        sample_ngos = [
-            ("ISKCON Food Relief Foundation - Mangalore", "Food Relief & Ashram Support", "high", 12.8698, 74.8430, "ISKCON Temple, Arya Samaj Road, Balmatta, Mangalore", "Anita Desai", "+91 824 242 1234", "iskcon.mangalore@serviqo.ai", 450, json.dumps(["Cooked Rice", "Dal", "Sambar", "Vegetables", "Curd"])),
-            ("Sri Ramakrishna Ashram & Orphanage", "Ashram & Orphanage", "high", 12.9200, 74.8500, "Mangaladevi Road, Bolar, Mangalore", "Swami Prakash", "+91 98450 12345", "contact@ramakrishnaashram.org", 150, json.dumps(["Dal", "Rice", "Idli", "Sambar", "Vegetable Curry"])),
-            ("Karunya Community Feeding Kitchen", "Community Kitchen", "high", 12.9180, 74.8580, "Near Hampankatta Circle, Mangalore", "Mahesh Prabhu", "+91 99001 88776", "karunyafeeding@gmail.com", 180, json.dumps(["All Cooked Meals", "Rice", "Dal", "Idli", "Sambar"])),
-            ("Robin Hood Army - Mangalore Chapter", "Volunteer Food Rescue & Hunger Relief", "high", 12.8700, 74.8800, "City Center Area, K.S. Rao Road, Mangalore", "Priya Sharma", "+91 98200 45678", "rescue.mangalore@robinhoodarmy.com", 300, json.dumps(["Prepared Meals", "Rice", "Chapatis", "Curries", "Fruits"])),
-            ("Sneha Sadan Care Home - Mangalore", "Care Home & Shelter", "high", 12.9450, 74.9300, "Gurpur, Kaikamba, Mangalore", "Fr. Mathew", "+91 94480 33221", "contact@snehasadan.org", 140, json.dumps(["Cooked Rice", "Dal", "Vegetables", "Milk"]))
-        ]
-        cursor.executemany("""
-            INSERT INTO ngos (name, ngo_type, need_level, latitude, longitude, address, manager, phone, email, capacity_persons, requested_items)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, sample_ngos)
-
-        # Seed Suppliers
-        sample_suppliers = [
-            ("Srinivas Institute Canteen / Kitchen", "canteen", "high", 12.8718, 74.9204, "Srinivas Campus, Valachil, Mangalore", "Chef Venkatesh Rao", "+91 824 227 4730", "canteen@srinivasgroup.edu", json.dumps(["Steamed Rice (40kg)", "Sambar (25L)", "Chapati (120 pcs)"])),
-            ("Ocean Pearl Banquet & Kitchen", "function_hall", "high", 12.8732, 74.8421, "K.S. Rao Road, Hampankatta, Mangalore", "Vikram Soans", "+91 824 249 7000", "events@oceanpearl.in", json.dumps(["Veg Biryani (50kg)", "Paneer Curry (30L)", "Gulab Jamun (200 pcs)"])),
-            ("Mangalore University Central Canteen", "caterer", "medium", 12.8159, 74.9248, "Konaje Campus, Mangalore", "Chef Murugan", "+91 824 228 7276", "canteen@mangaloreuniv.ac.in", json.dumps(["Cooked Meals (60 portions)", "Sambar (20L)", "Curd Rice (25kg)"]))
-        ]
-        cursor.executemany("""
-            INSERT INTO suppliers (name, category, surplus_level, latitude, longitude, address, manager, phone, email, available_items)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, sample_suppliers)
-
-        # Seed Inventory Items
-        sample_inventory = [
-            ("Cooked Rice", "Cooked Meals", 120.0, "portions", 1, today + timedelta(days=1), 120, "EXPIRING SOON", "Srinivas Institute Canteen", "Surplus Donation Eligible"),
-            ("Dal Tadka", "Cooked Meals", 75.0, "portions", 1, today + timedelta(days=1), 75, "EXPIRING SOON", "Srinivas Institute Canteen", "Surplus Donation Eligible"),
-            ("Steamed Idli", "Breakfast Items", 100.0, "plates", 1, today + timedelta(days=1), 100, "SURPLUS", "Srinivas Institute Canteen", "Immediate Recovery Advised"),
-            ("Mixed Vegetable Curry", "Cooked Meals", 45.0, "portions", 1, today + timedelta(days=1), 45, "AVAILABLE", "Srinivas Institute Canteen", "Standard Distribution"),
-            ("Fresh Milk", "Dairy", 30.0, "liters", 2, today + timedelta(days=2), 60, "AVAILABLE", "Srinivas Institute Canteen", "Kitchen Stock"),
-            ("Wheat Roti / Chapatis", "Cooked Meals", 150.0, "pieces", 1, today + timedelta(days=1), 75, "SURPLUS", "Srinivas Institute Canteen", "Surplus Donation Eligible"),
-            ("Raw Rice (Bags)", "Dry Rations", 250.0, "kg", 60, today + timedelta(days=60), 1000, "AVAILABLE", "Srinivas Institute Canteen", "Bulk Storage"),
-            ("Cooking Oil", "Dry Rations", 8.0, "liters", 45, today + timedelta(days=45), 200, "LOW STOCK", "Srinivas Institute Canteen", "Reorder Required")
-        ]
-        cursor.executemany("""
-            INSERT INTO inventory (name, category, quantity, unit, expiry_days, expiry_date, servings_estimate, status, supplier_name, suggested_action)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, sample_inventory)
-
-        # Seed Sample Donations
-        sample_donations = [
-            (1, "Cooked Rice", 40.0, "portions", 1, "The Akshaya Patra Foundation", "Srinivas Institute Canteen", "Srinivas Campus Canteen Gate 2, Mangalore", "Within 3 hours", "Surplus afternoon lunch cooked rice available for immediate distribution.", "PENDING"),
-            (2, "Steamed Idli", 50.0, "plates", 6, "Sri Ramakrishna Ashram & Orphanage", "Srinivas Institute Canteen", "Srinivas Campus Canteen Gate 2, Mangalore", "Within 2 hours", "Fresh breakfast idli ready for volunteer pickup.", "ACCEPTED")
-        ]
-        cursor.executemany("""
-            INSERT INTO donations (inventory_id, food_item, quantity, unit, ngo_id, ngo_name, supplier_name, pickup_address, pickup_deadline, message, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, sample_donations)
-
-        # Seed Sample Announcements
-        sample_announcements = [
-            ("Welcome to Serviqo AI", "MySQL 8.0 database integration is fully active. All Srinivas canteen inventory, demand forecasts, and donation dispatches are now relationally managed.", "All Staff", "High", "Canteen Manager", "Sent"),
-            ("Afternoon Recovery Schedule", "Akshaya Patra volunteer vehicle will arrive between 3:30 PM - 4:00 PM for surplus recovery.", "Kitchen Staff", "Normal", "Kitchen Operations", "Sent")
-        ]
-        cursor.executemany("""
-            INSERT INTO announcements (title, message, recipient, priority, sender, status)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, sample_announcements)
-
-        conn.commit()
-        print("[MySQL Seeder] Explicit demo dataset successfully loaded.")
-        return True
-
 
 # ==========================================
 # HEALTH CHECK
@@ -1814,10 +1733,26 @@ def get_latest_demand_forecast() -> Optional[Dict[str, Any]]:
 # ==========================================
 # ANNOUNCEMENTS CRUD
 # ==========================================
-def get_all_announcements() -> List[Dict[str, Any]]:
+def get_all_announcements(audience: Optional[str] = None) -> List[Dict[str, Any]]:
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM announcements ORDER BY id DESC")
+        if audience and audience.lower() in ("ngo", "volunteer", "volunteers", "relief"):
+            cursor.execute("""
+                SELECT * FROM announcements 
+                WHERE recipient IN ('Relief Transport', 'Food Recovery Volunteers', 'Food Recovery Volunteers & NGOs', 'NGO', 'NGOs', 'Community Partners')
+                   OR LOWER(recipient) LIKE '%volunteer%'
+                   OR LOWER(recipient) LIKE '%relief%'
+                   OR LOWER(recipient) LIKE '%ngo%'
+                ORDER BY id DESC
+            """)
+        elif audience and audience.lower() in ("staff", "kitchen"):
+            cursor.execute("""
+                SELECT * FROM announcements 
+                WHERE recipient NOT IN ('Relief Transport', 'Food Recovery Volunteers', 'Food Recovery Volunteers & NGOs', 'NGO', 'NGOs', 'Community Partners')
+                ORDER BY id DESC
+            """)
+        else:
+            cursor.execute("SELECT * FROM announcements ORDER BY id DESC")
         rows = cursor.fetchall()
         for r in rows:
             if r.get("created_at"):
@@ -2463,3 +2398,133 @@ def get_analytics_summary() -> Dict[str, Any]:
             "total_donations_count": total_donations_count,
             "completed_donations_count": completed_donations_count
         }
+
+
+# ==========================================
+# AUTOMATED HISTORICAL DEMAND DERIVATION ENGINE
+# ==========================================
+def get_historical_demand_features(
+    meal_type: str,
+    menu_item: Optional[str] = None,
+    before_datetime: Optional[Any] = None
+) -> Dict[str, Any]:
+    """
+    Automated historical demand feature derivation for ML inference.
+    Extracts 7-day lag (observation t-7) and 7-day trailing moving average
+    from verified historical database records strictly prior to before_datetime.
+
+    Data Source Handling:
+    - If 'actual_demand' is populated, it is used as verified actual ground truth.
+    - If 'actual_demand' is NULL, historical logged portion values from 'top_items_json'
+      and 'predicted_demand' are used as a calibrated historical forecast proxy,
+      explicitly flagged as 'forecast_history_proxy'.
+    - If insufficient history exists (< 7 observations), lag_7 is returned as None (np.nan),
+      which LightGBM natively routes through its trained default branch without inventing fake data.
+    """
+    clean_meal = (meal_type or "breakfast").strip().lower()
+    cutoff = before_datetime or datetime.now()
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, meal_type, attendance, predicted_demand, recommended_prep, top_items_json, actual_demand, created_at
+            FROM demand_forecasts
+            WHERE LOWER(meal_type) = %s
+              AND created_at < %s
+            ORDER BY created_at DESC
+            LIMIT 40
+        """, (clean_meal, cutoff))
+        rows = cursor.fetchall()
+
+    if not rows:
+        return {
+            "history_source": "none",
+            "observation_count": 0,
+            "overall_lag_7": None,
+            "overall_rolling_7d": None,
+            "items": {}
+        }
+
+    # Group by distinct operational dates to avoid duplicate runs on the same day distorting lags
+    date_buckets: Dict[str, Dict[str, Any]] = {}
+    for r in rows:
+        d_str = r["created_at"].strftime("%Y-%m-%d") if r.get("created_at") else str(r["id"])
+        if d_str not in date_buckets:
+            date_buckets[d_str] = r
+
+    distinct_observations = list(date_buckets.values())
+    obs_count = len(distinct_observations)
+
+    # Check whether ground truth actual_demand exists or if we are using forecast proxy
+    has_actual = any(r.get("actual_demand") is not None for r in distinct_observations)
+    history_source = "actual_demand_ground_truth" if has_actual else "forecast_history_proxy"
+
+    # Overall meal demand values
+    overall_demands = []
+    for r in distinct_observations:
+        if r.get("actual_demand") is not None:
+            overall_demands.append(float(r["actual_demand"]))
+        else:
+            overall_demands.append(float(r.get("predicted_demand") or 0.0))
+
+    overall_lag_7 = overall_demands[6] if obs_count >= 7 else None
+    overall_rolling_7d = round(sum(overall_demands[:7]) / min(obs_count, 7), 1) if obs_count > 0 else None
+
+    # Item-level extraction from top_items_json
+    item_histories: Dict[str, List[float]] = {}
+    for r in distinct_observations:
+        raw_json = r.get("top_items_json")
+        items_list = []
+        if raw_json and isinstance(raw_json, str):
+            try:
+                items_list = json.loads(raw_json)
+            except Exception:
+                items_list = []
+        elif isinstance(raw_json, list):
+            items_list = raw_json
+
+        for it in items_list:
+            name = it.get("name")
+            qty = it.get("quantity")
+            if name and qty is not None:
+                if name not in item_histories:
+                    item_histories[name] = []
+                item_histories[name].append(float(qty))
+
+    items_result: Dict[str, Dict[str, Any]] = {}
+    for item_name, vals in item_histories.items():
+        cnt = len(vals)
+        lag_7 = vals[6] if cnt >= 7 else None
+        rolling_7 = round(sum(vals[:7]) / min(cnt, 7), 1) if cnt > 0 else None
+        items_result[item_name] = {
+            "lag_7": lag_7,
+            "rolling_7d": rolling_7,
+            "observation_count": cnt
+        }
+
+    return {
+        "history_source": history_source,
+        "observation_count": obs_count,
+        "overall_lag_7": overall_lag_7,
+        "overall_rolling_7d": overall_rolling_7d,
+        "items": items_result
+    }
+
+
+def record_actual_demand(forecast_id: int, actual_demand: int) -> Optional[Dict[str, Any]]:
+    """
+    Records ground truth post-meal actual demand in MySQL demand_forecasts.
+    Completes the operational feedback loop for continuous ML validation.
+    """
+    if actual_demand < 0:
+        raise ValueError("Actual demand cannot be negative.")
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM demand_forecasts WHERE id = %s", (forecast_id,))
+        if not cursor.fetchone():
+            return None
+        cursor.execute("UPDATE demand_forecasts SET actual_demand = %s WHERE id = %s", (actual_demand, forecast_id))
+        conn.commit()
+        cursor.execute("SELECT * FROM demand_forecasts WHERE id = %s", (forecast_id,))
+        return cursor.fetchone()
+

@@ -1,11 +1,10 @@
 """
 Serviqo AI - Pure MySQL FastAPI Backend
-Connected end-to-end to MySQL 8.0 (serviqo_ai) and food_demand_model.pkl.
+Connected end-to-end to MySQL 8.0 (serviqo_ai) and canteen_model.joblib.
 Zero SQLite dependencies.
 """
 
 import os
-import math
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 try:
@@ -14,10 +13,10 @@ try:
 except ImportError:
     pass
 
-from typing import Optional, List, Dict, Any, Tuple
-from fastapi import FastAPI, Query, HTTPException, Body, status, Request, Header
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, Query, HTTPException, Body, status, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, EmailStr
 
 import database as db
@@ -48,26 +47,45 @@ app.add_middleware(
 @app.get("/api/health")
 def health_check():
     """
-    Database health-check endpoint that verifies connectivity without revealing
-    passwords, credentials, or sensitive database details.
+    Unified health-check endpoint that checks application availability,
+    database connectivity, and ML model status without exposing secrets.
+    Returns HTTP 200 if fully healthy, or HTTP 503 if any critical service is unavailable or degraded.
     """
-    health = db.check_mysql_health()
+    db_health = db.check_mysql_health()
+    model_status = ml.get_model_status()
     from fastapi.responses import JSONResponse
-    is_ok = bool(health.get("connected"))
+
+    is_db_ok = bool(db_health.get("connected") or db_health.get("healthy"))
+    is_model_ok = bool(model_status.get("model_status") == "active_canteen_model" and model_status.get("model_file_exists"))
+    is_healthy = is_db_ok and is_model_ok
+
+    status_str = "healthy" if is_healthy else ("degraded" if is_db_ok else "unhealthy")
+    status_code = 200 if is_healthy else 503
+
     return JSONResponse(
-        status_code=200 if is_ok else 503,
+        status_code=status_code,
         content={
-            "status": "healthy" if is_ok else "unhealthy",
-            "database": {
-                "connected": is_ok,
-                "status": health.get("status"),
-                "tables_count": len(health.get("tables", [])),
-                "message": health.get("message")
-            },
+            "status": status_str,
             "service": "Serviqo AI Backend",
-            "version": "3.0"
+            "version": "3.0",
+            "application": {
+                "status": "up"
+            },
+            "database": {
+                "connected": is_db_ok,
+                "status": db_health.get("status", "healthy" if is_db_ok else "disconnected"),
+                "tables_count": len(db_health.get("tables", [])),
+                "message": db_health.get("message")
+            },
+            "ml_model": {
+                "loaded": is_model_ok,
+                "model_name": model_status.get("model_name"),
+                "model_status": model_status.get("model_status"),
+                "framework": model_status.get("framework")
+            }
         }
     )
+
 
 
 def get_authenticated_user_context(request: Request) -> Optional[Dict[str, Any]]:
@@ -232,14 +250,21 @@ class DemandForecastRequest(BaseModel):
     is_exam_day: Optional[bool] = False
     is_college_event: Optional[bool] = False
     is_campus_event: Optional[bool] = False
-    previous_demand: Optional[int] = None
-    avg_7day_demand: Optional[int] = None
-    rolling_avg_7day: Optional[int] = None
     popularity_level: Optional[int] = Field(2, ge=1, le=3)
     menu_item: Optional[str] = None
     academic_status: Optional[str] = None
     college_event: Optional[str] = None
     holiday_name: Optional[str] = None
+    # Historical demand features are automated from MySQL observations;
+    # manual inputs are retained only as optional deprecated fields for backwards compatibility
+    previous_demand: Optional[int] = None
+    avg_7day_demand: Optional[int] = None
+    rolling_avg_7day: Optional[int] = None
+
+
+class ActualDemandRecordRequest(BaseModel):
+    actual_demand: int = Field(..., ge=0, example=155, description="Actual meal servings consumed (ground truth)")
+
 
 
 class AnnouncementCreate(BaseModel):
@@ -321,21 +346,10 @@ def update_profile(req: UserProfileUpdate):
 
 
 # ==========================================
-# SYSTEM HEALTH & STATUS
+# ML MODEL STATUS
 # ==========================================
-@app.get("/api/health")
-def health():
-    db_health = db.check_mysql_health()
-    model_status = ml.get_model_status()
-    return {
-        "status": "healthy" if db_health.get("healthy") else "degraded",
-        "service": "Serviqo AI Backend",
-        "database": db_health,
-        "ml_model": model_status
-    }
-
-
 @app.get("/api/ml-status")
+
 def ml_status():
     return ml.get_model_status()
 
@@ -503,40 +517,50 @@ def get_surplus():
 
 
 # ==========================================
-# ML KITCHEN DEMAND FORECASTING (food_demand_model.pkl)
+# ML KITCHEN DEMAND FORECASTING (canteen_model.joblib)
 # ==========================================
 @app.post("/api/demand-forecast")
 @app.post("/api/demand-forecast/predict")
 @app.post("/predict")
 def generate_kitchen_demand(req: DemandForecastRequest):
     """
-    Infers food demand using the existing trained LightGBM ML model.
+    Infers food demand using the authoritative canteen_model.joblib LightGBM dual-model.
+    Derives historical lag and rolling statistics automatically from MySQL database records.
     Stores the prediction result into MySQL 'demand_forecasts'.
     """
     is_event = req.is_college_event or req.is_campus_event or False
-    avg_demand = req.avg_7day_demand if req.avg_7day_demand is not None else req.rolling_avg_7day
 
-    prediction_result = ml.predict_kitchen_demand(
+    # Automatically derive legitimate historical lag and rolling features from database
+    historical_features = db.get_historical_demand_features(
         meal_type=req.meal_type,
-        attendance=req.attendance,
-        hostel_attendance=req.hostel_attendance,
-        dayscholar_attendance=req.dayscholar_attendance,
-        temperature_c=req.temperature_c or 27.0,
-        rainfall_mm=req.rainfall_mm or 0.0,
-        humidity_pct=req.humidity_pct or 65.0,
-        day_type=req.day_type or "weekday",
-        is_weekend=req.is_weekend,
-        is_holiday=req.is_holiday,
-        is_exam_day=req.is_exam_day or False,
-        is_college_event=is_event,
-        previous_demand=req.previous_demand,
-        avg_7day_demand=avg_demand,
-        popularity_level=req.popularity_level or 2,
-        menu_item=req.menu_item,
-        academic_status=req.academic_status,
-        college_event=req.college_event,
-        holiday_name=req.holiday_name
+        menu_item=req.menu_item
     )
+
+    try:
+        prediction_result = ml.predict_kitchen_demand(
+            meal_type=req.meal_type,
+            attendance=req.attendance,
+            hostel_attendance=req.hostel_attendance,
+            dayscholar_attendance=req.dayscholar_attendance,
+            temperature_c=req.temperature_c or 27.0,
+            rainfall_mm=req.rainfall_mm or 0.0,
+            humidity_pct=req.humidity_pct or 65.0,
+            day_type=req.day_type or "weekday",
+            is_weekend=req.is_weekend,
+            is_holiday=req.is_holiday,
+            is_exam_day=req.is_exam_day or False,
+            is_college_event=is_event,
+            popularity_level=req.popularity_level or 2,
+            menu_item=req.menu_item,
+            academic_status=req.academic_status,
+            college_event=req.college_event,
+            holiday_name=req.holiday_name,
+            historical_features=historical_features
+        )
+    except RuntimeError as re:
+        raise HTTPException(status_code=503, detail=str(re))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ML prediction pipeline error: {str(e)}")
 
     # Persist prediction to MySQL database
     logged = db.log_demand_forecast(prediction_result)
@@ -567,30 +591,44 @@ def get_predictions_history():
     return {"latest": latest}
 
 
+@app.post("/api/demand-forecast/{forecast_id}/actual")
+def record_actual_demand_endpoint(forecast_id: int, req: ActualDemandRecordRequest):
+    """Records verified post-meal actual ground truth demand into MySQL demand_forecasts."""
+    try:
+        updated = db.record_actual_demand(forecast_id=forecast_id, actual_demand=req.actual_demand)
+        if not updated:
+            raise HTTPException(status_code=404, detail=f"Demand forecast #{forecast_id} not found.")
+        return {
+            "success": True,
+            "message": f"Actual demand ({req.actual_demand}) recorded for forecast #{forecast_id}.",
+            "forecast": updated
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to record actual demand: {e}")
+
+
 @app.get("/api/ml/metrics")
 def get_ml_metrics():
-    """Provides validated ML performance metrics for the Canteen Demand Forecasting XGBoost model."""
+    """Provides authentic architectural metadata for the authoritative canteen_model.joblib model."""
+    status = ml.get_model_status()
+    is_loaded = (status.get("model_status") == "active_canteen_model")
     return {
-        "model_name": "Canteen Demand Forecasting (XGBoost Regressor)",
-        "framework": "XGBoost + Scikit-Learn",
-        "target": "canteen_lunch_demand_plates",
-        "metrics": {
-            "mae": 7.42,
-            "mape": 4.86,
-            "rmse": 9.18,
-            "r2_score": 0.9168,
-            "training_samples": 4820,
-            "features_used": 14
-        },
-        "features": [
-            "previous_demand", "rolling_avg_7day", "day_of_week",
-            "is_weekend", "is_holiday", "is_exam_day", "is_college_event",
-            "temperature_c", "humidity_pct", "precipitation_prob",
-            "attendance_count", "popularity_level", "menu_item_encoded", "meal_type_encoded"
-        ],
-        "status": "HEALTHY",
-        "last_validated": "2026-10-06"
+        "model_name": status.get("model_name", "canteen_model.joblib"),
+        "framework": status.get("framework", "LightGBM Dual-Model (LGBMRegressor)"),
+        "target": "dual_target: expected_demand (regression) + safe_prep (quantile alpha=0.85)",
+        "status": "HEALTHY" if is_loaded else "UNAVAILABLE",
+        "features_count": status.get("features_count", 19),
+        "features": status.get("feature_cols", []),
+        "categorical_features": status.get("categorical_features", []),
+        "target_estimators": status.get("target_estimators", []),
+        "evaluation_metrics": {
+            "available": False,
+            "message": "Offline evaluation metrics are not bundled in canteen_model.joblib. Authentic validation metrics will be computed continuously against logged actual demand."
+        }
     }
+
 
 
 # ==========================================
@@ -989,8 +1027,8 @@ def map_data(
 # ANNOUNCEMENTS ENDPOINTS
 # ==========================================
 @app.get("/api/announcements")
-def list_announcements():
-    return {"announcements": db.get_all_announcements()}
+def list_announcements(audience: Optional[str] = None):
+    return {"announcements": db.get_all_announcements(audience=audience)}
 
 
 @app.post("/api/announcements")
@@ -999,8 +1037,51 @@ def create_announcement(ann: AnnouncementCreate):
     return {"message": "Announcement created successfully.", "announcement": created}
 
 
-# Serve static web frontend
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+# ==========================================
+# SECURE RESTRICTED STATIC ASSET SERVING
+# ==========================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+ALLOWED_STATIC_FILES = {
+    "": ("index.html", "text/html"),
+    "index.html": ("index.html", "text/html"),
+    "styles.css": ("styles.css", "text/css"),
+    "app.js": ("app.js", "application/javascript"),
+}
+
+
+@app.get("/")
+@app.get("/index.html")
+def serve_index():
+    return FileResponse(os.path.join(BASE_DIR, "index.html"), media_type="text/html")
+
+
+@app.get("/styles.css")
+def serve_styles():
+    return FileResponse(os.path.join(BASE_DIR, "styles.css"), media_type="text/css")
+
+
+@app.get("/app.js")
+def serve_script():
+    return FileResponse(os.path.join(BASE_DIR, "app.js"), media_type="application/javascript")
+
+
+@app.get("/{file_path:path}")
+def serve_restricted_static(file_path: str):
+    """
+    Restricted static file endpoint.
+    Explicitly prevents public exposure of sensitive files:
+    .env, python sources (*.py), SQL backups (*.sql), model artifacts (*.joblib, *.pkl),
+    .git, .venv, quarantine, or arbitrary filesystem directories.
+    """
+    clean_path = file_path.strip().lstrip("/\\")
+    if clean_path in ALLOWED_STATIC_FILES:
+        filename, media_type = ALLOWED_STATIC_FILES[clean_path]
+        full_path = os.path.join(BASE_DIR, filename)
+        if os.path.exists(full_path):
+            return FileResponse(full_path, media_type=media_type)
+    raise HTTPException(status_code=404, detail="Resource not found or access restricted.")
+
 
 
 if __name__ == "__main__":

@@ -211,6 +211,7 @@ function setAuthMode(mode) {
     const authTitle = document.getElementById('auth-title');
     const authSubtitle = document.getElementById('auth-subtitle');
     const alertBox = document.getElementById('auth-alert-box');
+    const authSwitchPrompt = document.getElementById('authSwitchPrompt');
     
     if (alertBox) alertBox.classList.add('hidden');
 
@@ -229,8 +230,11 @@ function setAuthMode(mode) {
         }
         if (formSignin) formSignin.classList.remove('hidden');
         if (formRegister) formRegister.classList.add('hidden');
-        if (authTitle) authTitle.textContent = 'Sign in to Serviqo AI';
-        if (authSubtitle) authSubtitle.textContent = 'Access your personalized canteen or NGO workspace.';
+        if (authTitle) authTitle.textContent = 'Welcome Back!';
+        if (authSubtitle) authSubtitle.textContent = 'Login to continue your Serviqo AI journey';
+        if (authSwitchPrompt) {
+            authSwitchPrompt.innerHTML = `Don't have an account? <button class="text-btn signup-btn" id="signupBtn" type="button" onclick="setAuthMode('register')">Sign Up</button>`;
+        }
     } else {
         if (tabRegister) {
             tabRegister.classList.add('active');
@@ -248,6 +252,9 @@ function setAuthMode(mode) {
         if (formRegister) formRegister.classList.remove('hidden');
         if (authTitle) authTitle.textContent = 'Create an Account';
         if (authSubtitle) authSubtitle.textContent = 'Register as Srinivas Canteen staff or a verified relief partner.';
+        if (authSwitchPrompt) {
+            authSwitchPrompt.innerHTML = `Already have an account? <button class="text-btn signup-btn" id="signinBtn" type="button" onclick="setAuthMode('signin')">Sign In</button>`;
+        }
     }
 }
 
@@ -623,6 +630,8 @@ function handleLogout() {
     }
     setAuth(null);
     showToast('Signed out successfully. Authentication session ended.', 'info');
+    const shell = document.getElementById('landingShell');
+    if (shell) shell.classList.remove('show-login');
     navigateTo('login');
 }
 
@@ -937,8 +946,6 @@ if (demandForecastForm) {
         const dayType = document.getElementById('demand-daytype')?.value || 'weekday';
         const isExam = document.getElementById('demand-examday')?.value === 'true';
         const isEvent = document.getElementById('demand-event')?.value === 'true';
-        const previousDemand = parseInt(document.getElementById('demand-previous')?.value) || 140;
-        const avg7Day = parseInt(document.getElementById('demand-avg-7day')?.value) || 145;
         const popularity = parseInt(document.getElementById('demand-popularity')?.value) || 2;
 
         const payload = {
@@ -953,8 +960,6 @@ if (demandForecastForm) {
             is_holiday: dayType === 'holiday',
             is_exam_day: isExam,
             is_campus_event: isEvent,
-            previous_demand: previousDemand,
-            rolling_avg_7day: avg7Day,
             popularity_level: popularity
         };
 
@@ -982,15 +987,17 @@ if (demandForecastForm) {
 
             const totalEl = document.getElementById('forecast-total-demand');
             const prepEl = document.getElementById('forecast-prep-text');
+            const bufferEl = document.getElementById('forecast-buffer-text');
             const recEl = document.getElementById('demand-rec-text');
             const modelBadge = document.getElementById('forecast-model-badge');
 
             if (totalEl) totalEl.textContent = `${data.predicted_demand} Servings`;
             if (prepEl) prepEl.textContent = `${data.recommended_prep} Servings`;
+            if (bufferEl) bufferEl.textContent = `Includes +${data.safety_buffer_percent || 0}% safety prep buffer (${data.safety_buffer || 0} servings)`;
             if (recEl) recEl.textContent = data.recommendation;
             if (modelBadge) modelBadge.textContent = data.model_engine || 'LightGBM Production Engine';
 
-            // Portion Breakdown
+            // Portion Breakdown: clearly displays predicted demand vs recommended safe prep
             const breakdownContainer = document.getElementById('menu-demand-items');
             if (breakdownContainer && data.top_items) {
                 breakdownContainer.innerHTML = data.top_items.map(item => {
@@ -1001,16 +1008,18 @@ if (demandForecastForm) {
                                 <strong style="color: var(--text-primary); font-size: 0.9rem;">${item.name}</strong>
                                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
                                     Risk: <span class="badge ${riskBadge}">${item.waste_risk.toUpperCase()}</span>
+                                    <span style="margin-left: 6px; color: var(--text-secondary);">Prep: <strong style="color: var(--success-text);">${item.safe_prep}</strong> ${item.unit}</span>
                                 </div>
                             </div>
                             <div style="text-align: right;">
                                 <strong style="font-size: 1.15rem; color: var(--primary);">${item.quantity}</strong>
-                                <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 2px;">${item.unit}</span>
+                                <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 2px;">${item.unit} (demand)</span>
                             </div>
                         </div>
                     `;
                 }).join('');
             }
+
 
             showToast(`LightGBM Prediction completed & persisted to MySQL for ${currentMealTab.toUpperCase()}!`, 'success');
 
@@ -1067,14 +1076,14 @@ async function initSupplierDemandChart() {
                 {
                     label: 'Predicted Demand (Servings)',
                     data: demandData,
-                    backgroundColor: 'rgba(13, 148, 136, 0.75)',
-                    borderRadius: 4
+                    backgroundColor: 'rgba(44, 168, 91, 0.85)',
+                    borderRadius: 6
                 },
                 {
                     label: 'Recommended Prep (Servings)',
                     data: prepData,
-                    backgroundColor: 'rgba(16, 185, 129, 0.75)',
-                    borderRadius: 4
+                    backgroundColor: 'rgba(101, 200, 133, 0.85)',
+                    borderRadius: 6
                 }
             ]
         },
@@ -1082,11 +1091,11 @@ async function initSupplierDemandChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#64748b', font: { family: 'Poppins' } } }
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 12, weight: 600 } } }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#64748b' }, beginAtZero: true }
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter' } } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: '#94a3b8', font: { family: 'Inter' } }, beginAtZero: true }
             }
         }
     });
@@ -2068,20 +2077,17 @@ async function loadCanteenAnalytics() {
             const mlRes = await fetch(`${API_BASE}/api/ml/metrics`);
             if (mlRes.ok) {
                 const mlData = await mlRes.json();
-                const m = mlData.metrics;
-                if (m) {
-                    const elMae = document.getElementById('ml-metric-mae');
-                    const elMape = document.getElementById('ml-metric-mape');
-                    const elR2 = document.getElementById('ml-metric-r2');
-                    const elRmse = document.getElementById('ml-metric-rmse');
-                    const elBadge = document.getElementById('ml-metric-samples-badge');
+                const elMae = document.getElementById('ml-metric-mae');
+                const elMape = document.getElementById('ml-metric-mape');
+                const elR2 = document.getElementById('ml-metric-r2');
+                const elRmse = document.getElementById('ml-metric-rmse');
+                const elBadge = document.getElementById('ml-metric-samples-badge');
 
-                    if (elMae) elMae.innerHTML = `${m.mae} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span>`;
-                    if (elMape) elMape.textContent = `${m.mape}%`;
-                    if (elR2) elR2.textContent = `${m.r2_score}`;
-                    if (elRmse) elRmse.innerHTML = `${m.rmse} <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">plates</span>`;
-                    if (elBadge) elBadge.innerHTML = `<i class="ph ph-database"></i> ${(m.training_samples || 4820).toLocaleString()} Records`;
-                }
+                if (elMae) elMae.textContent = 'LGBMRegressor';
+                if (elMape) elMape.textContent = 'Quantile (α=0.85)';
+                if (elR2) elR2.textContent = `${mlData.features_count || 19} Features`;
+                if (elRmse) elRmse.textContent = mlData.status || 'ACTIVE';
+                if (elBadge) elBadge.innerHTML = `<i class="ph ph-sliders"></i> ${mlData.features_count || 19} Features`;
             }
         } catch (mlErr) {
             console.warn('ML metrics fetch error:', mlErr);
@@ -2153,8 +2159,8 @@ async function initCanteenAnalyticsChart() {
                 {
                     label: 'Predicted Demand (Servings)',
                     data: demandData,
-                    borderColor: '#0d9488',
-                    backgroundColor: 'rgba(13, 148, 136, 0.08)',
+                    borderColor: '#2ca85b',
+                    backgroundColor: 'rgba(44, 168, 91, 0.12)',
                     borderWidth: 2.5,
                     tension: 0.3,
                     fill: true
@@ -2162,8 +2168,8 @@ async function initCanteenAnalyticsChart() {
                 {
                     label: 'Recommended Batch Prep (Servings)',
                     data: prepData,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                    borderColor: '#65c885',
+                    backgroundColor: 'rgba(101, 200, 133, 0.08)',
                     borderWidth: 2.5,
                     tension: 0.3,
                     fill: true
@@ -2174,11 +2180,11 @@ async function initCanteenAnalyticsChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#64748b' } }
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 12, weight: 600 } } }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#64748b' }, beginAtZero: true }
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter' } } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: '#94a3b8', font: { family: 'Inter' } }, beginAtZero: true }
             }
         }
     });
@@ -3046,7 +3052,7 @@ async function initNgoRecoveryChart() {
                     label: 'Food Received (kg)',
                     data: receivedData,
                     borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)',
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.3
@@ -3054,8 +3060,8 @@ async function initNgoRecoveryChart() {
                 {
                     label: 'Community Distributed (kg)',
                     data: distributedData,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                    borderColor: '#2ca85b',
+                    backgroundColor: 'rgba(44, 168, 91, 0.08)',
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.3
@@ -3066,11 +3072,11 @@ async function initNgoRecoveryChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#64748b' } }
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 12, weight: 600 } } }
             },
             scales: {
-                x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#64748b' }, beginAtZero: true }
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter' } } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: '#94a3b8', font: { family: 'Inter' } }, beginAtZero: true }
             }
         }
     });
@@ -3082,28 +3088,39 @@ async function loadNgoAnnouncementsPage() {
     if (!feed) return;
 
     try {
-        const res = await fetch(`${API_BASE}/api/announcements`);
+        const res = await fetch(`${API_BASE}/api/announcements?audience=ngo`);
         if (!res.ok) throw new Error('Fetch failed');
         const data = await res.json();
         const items = data.announcements || [];
 
         if (items.length === 0) {
-            feed.innerHTML = `<p class="text-muted" style="font-size: 0.85rem;">No relief notices posted.</p>`;
+            feed.innerHTML = `
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+                    <i class="ph ph-megaphone-simple" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
+                    <p style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">No Volunteer Announcements</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">There are currently no active operational directives dispatched for food recovery volunteers.</p>
+                </div>
+            `;
             return;
         }
 
-        feed.innerHTML = items.map(ann => `
-            <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-sm); background: var(--bg-card);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
-                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">${ann.title}</h4>
-                    <span class="badge badge-info">${ann.priority}</span>
+        feed.innerHTML = items.map(ann => {
+            const isUrgent = (ann.priority || '').toLowerCase() === 'urgent';
+            const badgeClass = isUrgent ? 'badge-danger' : ((ann.priority || '').toLowerCase() === 'high' ? 'badge-warning' : 'badge-info');
+            return `
+                <div style="border: 1px solid var(--border-color); padding: 1.15rem; border-radius: var(--radius-sm); background: var(--bg-card);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">${ann.title}</h4>
+                        <span class="badge ${badgeClass}">${ann.priority}</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.4rem 0 0.6rem 0; line-height: 1.5;">${ann.message}</p>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 0.5rem; margin-top: 0.5rem;">
+                        <span>From: <strong>${ann.sender || 'Canteen Administration'}</strong></span>
+                        <span>Audience: <strong>${ann.recipient}</strong></span>
+                    </div>
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.4rem 0 0.6rem 0;">${ann.message}</p>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">
-                    From: <strong>${ann.sender || 'Canteen Staff'}</strong> | Audience: ${ann.recipient}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         feed.innerHTML = `<p class="text-muted">Failed to load announcements.</p>`;
@@ -3149,12 +3166,50 @@ function closeViewDonationModal() {
     if (modal) modal.classList.remove('active');
 }
 
+function applyTheme(theme) {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('serviqo_theme', theme);
+
+    // Update theme icon
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+
+    // Update all theme button text labels across the app
+    const themeTextSpans = document.querySelectorAll('.theme-btn-text');
+    themeTextSpans.forEach(span => {
+        span.textContent = theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+    });
+
+    // Update charts dynamically if rendered
+    const isLight = theme === 'light';
+    const gridColor = isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)';
+    const tickColor = isLight ? '#475569' : '#94a3b8';
+
+    [supplierDemandChartInstance, canteenAnalyticsDemandChartInstance, ngoRecoveryChartInstance].forEach(chart => {
+        if (chart && chart.options && chart.options.scales) {
+            if (chart.options.scales.x && chart.options.scales.x.ticks) {
+                chart.options.scales.x.ticks.color = tickColor;
+            }
+            if (chart.options.scales.y) {
+                if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = tickColor;
+                if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gridColor;
+            }
+            if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                chart.options.plugins.legend.labels.color = tickColor;
+            }
+            chart.update();
+        }
+    });
+}
+
 function toggleTheme() {
     const html = document.documentElement;
     const currentTheme = html.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('serviqo_theme', newTheme);
+    applyTheme(newTheme);
     showToast(`Switched to ${newTheme} mode.`, 'info');
 }
 
@@ -3322,11 +3377,9 @@ async function markAllNotificationsAsRead() {
 // 6. INITIAL APPLICATION MOUNT
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Restore Saved Theme
-    const savedTheme = localStorage.getItem('serviqo_theme');
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    }
+    // Restore Saved Theme (defaults to light mode)
+    const savedTheme = localStorage.getItem('serviqo_theme') || 'light';
+    applyTheme(savedTheme);
 
     // Bind sidebar buttons
     const sidebarBtns = document.querySelectorAll('.sidebar-btn[data-target]');
@@ -3364,6 +3417,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Forms are bound via inline onsubmit handlers (handleLoginSubmit, handleRegisterSubmit)
+
+    // Landing page interactive transitions & explore features
+    const landingShell = document.getElementById('landingShell');
+    const getStartedBtn = document.getElementById('getStartedBtn');
+    const topLoginBtn = document.getElementById('topLoginBtn');
+    const backBtn = document.getElementById('backBtn');
+    const learnBtn = document.getElementById('learnBtn');
+    const authEmail = document.getElementById('auth-email');
+
+    function openLandingLogin() {
+        if (landingShell) {
+            landingShell.classList.add('show-login');
+            setTimeout(() => {
+                if (authEmail) authEmail.focus();
+            }, 300);
+        }
+    }
+
+    function closeLandingLogin() {
+        if (landingShell) {
+            landingShell.classList.remove('show-login');
+        }
+    }
+
+    if (getStartedBtn) getStartedBtn.addEventListener('click', openLandingLogin);
+    if (topLoginBtn) topLoginBtn.addEventListener('click', openLandingLogin);
+    if (backBtn) backBtn.addEventListener('click', closeLandingLogin);
+
+    if (learnBtn) {
+        learnBtn.addEventListener('click', () => {
+            const featuresEl = document.getElementById('features');
+            if (featuresEl) {
+                featuresEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    // Social login demo buttons
+    const socialButtons = document.querySelectorAll('.social-btn');
+    socialButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showToast(`${btn.dataset.provider || 'Social'} login can be connected to OAuth.`, 'info');
+        });
+    });
+
+    const forgotBtn = document.getElementById('forgotBtn');
+    if (forgotBtn) {
+        forgotBtn.addEventListener('click', () => {
+            showToast('Password recovery can be connected to your authentication API.', 'info');
+        });
+    }
 
     // Role-dependent initial view & session restore
     syncUserInterface();
